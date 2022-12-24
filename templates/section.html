@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{section.title}}
+{% endblock title %}
+
+{% block content %}
+    <h1> {{section.title}} </h1>
+    {{section.content | safe}}
+
+    {% for page in section.pages %}
+        <section>
+            <h3>{{ page.title }}</h3>
+            <p>
+                {{ page.description }}
+                <br>
+                <a href="{{page.path}}">permalink</a>
+            </p>
+            {% if not loop.last %}
+                <hr>
+            {% endif %}
+        </section>
+    {% endfor %}
+{% endblock content%}

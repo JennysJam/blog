@@ -1,0 +1,34 @@
+html {
+    background-color: blanchedalmond;
+}
+
+body {
+    background-color: burlywood;
+    min-width: 60%;
+    width: 600px;
+    max-width: 80%;
+
+    margin: 0 auto;
+    margin-top: 1rem;
+    padding: 1rem;
+    
+    border-radius: 1rem;
+}
+
+section {
+    margin-left: 0.5rem; /*Add extra to interior*/
+}
+section > * {
+    margin-left: 0.5rem;
+}
+
+section > h3 {
+    margin-left: 0;
+}
+
+hr {
+    background-color: goldenrod;
+    border-color:goldenrod;
+    border-left: 0px;
+    border-right: 0px;
+}

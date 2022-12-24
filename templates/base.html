@@ -5,18 +5,21 @@
     <link rel="stylesheet" href="style.css">
     <title>
         {% block title %}
-        Jenny Jam's
+        Placeholder Title
         {% endblock title %}
     </title>
     {% endblock head %}
 </head>
+
 <body>
     {% block content %}
+    <p>Placeholder Content</p>
     {% endblock content %}
+    <footer>
+        {% block footer%}
+        <p>Placeholder footer</p>
+        {% endblock footer%}
+    </footer>
 </body>
-<footer>
-    {% block footer%}
-    <p>Basic Content</p>
-    {% endblock footer%}
-</footer>
+
 </html>
