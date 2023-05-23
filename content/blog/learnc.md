@@ -6,7 +6,7 @@ title = "What I wished I knew when learning C"
 
 This article is a response/take on both [Daniel Bachler's article on learning F#](https://danielbachler.de/2020/12/23/what-i-wish-i-knew-when-learning-fsharp.html) and [Hillel Wayne's on the hard part of learning a new language](https://www.hillelwayne.com/post/learning-a-language/). I thought it would be educational and a fun excersize to read this article in response to C.
 
-Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development.
+Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development, what tooling to use, or some deeper lore. 
 
 ## Why would I want to use C?
 
@@ -40,8 +40,8 @@ Thus if you have a project with the files:
 Compiling it using the traditional unix style toolchain would look like
 
 ```sh
-> cc foo.c -o foo.o
-> cc main.c -o foo.o
+> cc -C foo.c -o foo.o
+> cc -C main.c -o foo.o
 > ld main.o foo.o -o main
 ```
 
@@ -49,15 +49,178 @@ This model exists for almost all compilers, although you often do not execute it
 
 One of the advantages of this is partial builds -- if you keep around the object files after compiling something, you only need to recompile the object files for the c files you update.
 
-## Building C
+## The C Environment
 
-Like other older languages, C predates the design trend where language compilers come with an extended set of tools bundled together (see Go, Rust), and thus you have a large ecosystem set of possible build tools; some are meant to be generic, some are effectively tied to one system, some are explicitly tied to one system.
+If you're writing C, you're probably doing it in what the standard calls a _hosted_ environment: You are relying on the presence of an operating system to help manage things for you. There is also so-called _free-standing_, where you can not rely on the host operating system or libraries; this is the case for very resource constrained devices.
+
+### Basic environment
+
+If you've used many other programming languages, some or all of these will be familiar to you. This is because a lot of programming languages borrowed from C or even simply delegate their logic to the equivalent C.
+
+### Entry point
+
+C traditionally uses a function called `main()` as the entrypoint for an executable -- it is the first piece of user code that is run (Although it's likely other functions are called before this in order to set up pieces of an environment.)
+
+```c
+int main(int argc, char* argv[]) {
+    //...
+    return 0;
+}
+```
+
+When you invoke a program on the command line like `./foo 1 2 3`, those values are placed by the hosted environment in `argv`, and the numbers of arguments + 1 are recoreded in argc.
+
+`argv[0]` actually contains the string describing how a function was called: here it would be `./foo`. Multiple-application binaries like [Busybox](https://busybox.net/) utilize this to know what application to pretend to act like.
+
+Some platforms expose the environmental variables as a third paramter to `main()`.
+
+### Environmental variables
+
+Another aspect of the C runtime is that of "environmental variables": this is basically a Key-Value store of strings that are initialized when a program is run. It is often used to edit information about library loading, or to customize the behavior of a function without explitly passing arguments or recompiling the binary.
+
+```c
+#include <stdlib.h>
+
+int main(int argc, char* argv[]) {
+    char* envvar = getenv("FOO_LOG");
+    if (strcmp(envvar, "FOO_LOG") != 0 ) {
+        printf("Enabling logging!\n");
+    }
+    else {
+        printf("Disabled logging!\n");
+    }
+}
+```
+
+### File Streams
+
+One of the few abstractions built into the standard library for interacting with the host, _Files_ ( or _Streams_ ) are a way of abstracting storing data in a filesystem. Normally that means reading or saving information to a hard drive or SSD.
+
+However many other filesystems exist, for instance representing a remote storage location, read-only filesystems that are used on low-powered embedded devices to storage behavior, and so on.
+
+When an executable begins, three special files have already been initialized:
+
+- stdin: stream of information that is fed into a process
+- stdout: stream of information that is fed out of a process
+- stderr: a second stream of information that is used to describe diagnostic problems
+
+Normally, stdout and stderr both are printed to the command line; and stdin will record any keypresses you make while the process is running.
+
+### Signals
+
+C's signals are a simple form of _Interprocess Communication_ (IPC): they can be used to send a request to another Process to perform some logic. Signals are defined as integers with no additional information, and you can associate a function via a function pointer to handle them.
+
+For instance, debugger's like GDB set the Signal Interupt (The signal sent if you hit Ctrl-C to interupt a program) handler to bring up an interactive interface so you stop execution to perform manipulation.
+
+There are numerous signals used by C, but the one that you'll probably become the most familiar with is `SIGSEGV`, also known as a segmentation fault (_segfault_ for short). This occurs if you perform a memory violation, normally dereferencing a null or invalid pointer, or attemping to write to memory that is mapped readonly.  
+
+### Locales
+
+C has attempted to formalize the concept of internationalization (editing behavior to fit in different languages and cultures) with _locales_, which are used for adding logic to display text or parse input text.
+
+By default, C will be loaded with the `"C"` locale, which is mostly equivalent to English.
+
+### Errno
+
+`errno` is a bit of an odd oddball: the C standard library has several functions that do not have an obvious way of indicating that they failed (say, when a function to parse text to numbers fails). For most of these, they indicate failure by setting _errno_ with some integer value, which you must then check to see if it suceeded or not. The integer value 0 (called `ERR_OK`) is used to indicate no error.
+
+```c
+
+#include <errno.h>
+#include <stdio.h>
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        return 1;
+    }
+
+    errno = 0;
+
+    long i = strtol(argv[1], NULL, 10);
+    if (errno != 0) {
+        printf("Invalid number!\n");
+        return 0;
+    }
+    else printf("Sucessfuly parsed!\n");
+    return 0;
+}
+```
+
+After Threads and threading became common, `errno` shifted from being truly global to being a `thread_local` value, which means there is one errno value for each thread.
+
+Errno is something most C projects only interact with to see if a standard library has failed.
+
+## Libraries
+
+Whenever you need to rely on behavior that's not built into the langauge, you'll have to rely on a _library_. Libraries are a way of tying together functions for performing actions as well as interacting with the host systems. For instance, _SDL_ is a library with functions that let you draw things to a screen; _libjson_ is a library with functions for parsing and serializing data to the JSON interchange format.
+
+There's two functional varieties of libraries in use: static and dynamic libraries.
+
+### Static Libraries
+
+These are technically the older of the two concepts. A static library is a grouping of functions in a way that can be _linked_ into a binary when that binary is being constructed. This allows you to fix in behavior and not rely on the presence of a dynamic library on the users system.
+
+Some of the advantages of static linking are that you can set behavior at compile time, and you can prune any of the functions and values that are not used by the binary.
+
+Some larger projects also use static libraries to break up implemetnation and usage -- if you're creating a video game, you could put all of the main logic in a library called `libgame` in a function called `startgame()`, and have one executable called `game` that immediately calls `startgame()`, and another executable that instead is test the rendering system with examples. 
+
+The disadvantages are that you are permanently locking in information, rather than relying on potentially more update dynamic libraries. This could be very bad if the version of your networking library has an error that opens you up to security faults, or if a change in unicode adds a number of new digraphs an older version of the library couldn't handle.
+
+### Dynamic Libraries
+
+Dynamic libraries are the opposite of static libraries: the functions you are using are not loaded in til the executable is run, and then those functions are fetched in so you are always using the implementation the system provides, even if you change those functions out.
+
+Dynamic libraries are also often used for plugins: since you can manually load in libraries and associated values with Unix `dlopen()/dlsym()` and Windows `LoadLibrary()/GetProcAddress()`, you can load in additional logic to be run without baking it in. A video game might do this to load in mods, or a text editor to add support for a new programming language.
+
+The advantage of dynamic libraries are that they are always loaded in fresh, and thus you can fix security faults or add new behavior to older programs, and they can also save on system RAM -- if you don't have to load a copy of the math functions into every running binary, then you save a good deal of extra space.
+
+The problem with dynamic libraries is to take advantage of these benifets, you have to make sure that the library is the right version to match what your executable expects to use, which in the worst possible case involves bundling copies of the dynamic library you are relying on with your code!
+
+### Libc and other special libraries
+
+There is one library that is generally singled out for a special purpose: the standard library, usually called _libc_. Almost all hosted programs utilize libc, which exposes most of the functions in the standard, as well as manipulating some of the core runtime features like files and signal handling. While libc could just be a special library, it is often intimitately tied into the runtime system, and some compilers hard code expectations about what will be in it.
+
+In addition to libc, a few other libraries exist in the sort of special place where they are likely tied to the compiler (or even part of libc)
+
+- libm, which implements several math functions
+- libdl, which implements functions for working with dynamic libraries 
+
+## C Build Systems
+
+Like other older languages, C predates the design trend where language compilers come with an extended set of tools bundled together and suggested structure for what a project should look like. Instead, there's a pretty wide range of different tools to use, and each implicitly suggests a certain structure.
+
+### Why use a build system?
+
+You _could_  just make a buildscript that looks like `gcc *.c -o foo`, but while that might work for very small projects it quickly becomes a headache if your project is very big, or have a more complicated layout.
+
+Build systems are a way of describing what actions to take to compile a set of source files into a final form (or several final forms). They allow to describe this in a more concise, declarative form: working with the command line version itself might get messy if you need to only compile `foo_windows.c` on Windows, but need to compile `foo.c` on both Linux and MacOS.
+
+Additionally, build systems keep track of when the last time you edited a file, and only compile the source code files that have been changed. This doesn't seem like a big deal if your dealing with a small project that compiles in under a second, but it really matters if you're working with a massive codebase that can take hours to compile. 
 
 ### Make (GMake, BMake)
 
 Make is probably the oldest build system out there. While POSIX defines a very limited subset of rules and utilities, the major Make implementations (GNU Make and BSD Make) both have a much larger set of features.
 
-Both also tend to rely heavily on the presence of other programs on your machine via a shell script.
+Generally, I use Make for for smaller projects and simple examples because it is very easy to spin up with, and to add items to it incrementally. I generally lean away from using it if the project is expected to be quite large, or rely lots of complex conditional logic.
+
+The sample for our little project might look like
+
+```make
+.PHONY: all clean
+
+CFLAGS= -Wall -Wextra
+
+all: foo
+
+foo: main.o foo.o 
+    @$(CC) $(CFLAGS) main.o foo.o $(LDFLAGS) -o foo
+
+main.o: main.c foo.h
+foo.o: foo.c foo.h
+
+clean:
+    @rm -rf *.o foo
+```
 
 ### Ninja
 
@@ -65,40 +228,19 @@ Ninja is like a much more constrained Make, but was instead developed for meta-b
 
 ### CMake
 
-CMake bills itself as a "meta-build system" -- you write a project's build scripts in the CMake scripting language, and these are then compiled into a build target suitable for the system (such as Makefiles, Ninja, Visual Studio Code).
-
-As CMake has grown into popularity, it's not unusual for libraries to define there self in terms of CMake so that other projects can pull them in (either as a git submodule or via a top level cmake-config script installed with the `install` target).
+CMake bills itself as a "meta-build system" -- you write a project's build scripts in the CMake scripting language, and these are then compiled into a build target suitable for the system (such as Makefiles, Ninja, Visual Studio Code). It also acts as a sort of configuration system so that libraries using CMake can be easily built and consumd by other projects also using it with a minimal ammount of glue code.
 
 CMake also tends to change the layout of projects -- while Make-style targets usually put header files the same file as implementation files, CMake projects tend to put them in a distinct location and then add that to the header include path via commands, which means your IDE will probably have to have some introspection of the CMakeLists.txt command or it's output to allow intellisense to handle things correctly.
 
+Generally I use CMake if I expect the project to be bigger, involve a lot of fiddly logic, or if I'm using C++. It has a bit of a nasty reputation, but as long as you internalize a good way of structuring things I find it isn't too bad, just verbose. I prefer using most of the style suggestions in [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/).
+
 ### Visual Studio
 
-Visual Studio C has it's own format and build tool; but really would rather you edit it via the.
-
-### Autotools
-
-Autotools is also like CMake in that it is a meta-build system; unlike CMake, it has much more tenacious feature detection (to figure out what platform you are on) and the build files it creates are designed to be easily shipped, rather than the intermediate build artifact's CMake creates.
-
-I haven't personally used autotools, so I really can't speak to it's quality.
-
-### Meson
-
-Another meta-build system, this time using a python-like syntax for it's scripting languages.
-
-I haven't personally used this either, but AFAIK it's still constrained to unix like targets.
-
-
-### Everything else under the sun
-
-There several other build system I've heard of, but haven't used:
-
-- A few of Google's large open source projects (Android, Chrome) use a homebrew build system.
-- SCons, Premake and a few other attempts at trying to make a nicer make-like language
-- Build tools originally meant for other languages that have utilities added for building C.
+Visual Studio C has it's own format (which is a specialized XML file) and build tool; but really would rather you edit it via an exposed gui interface. I've used it a decent ammount, but it's quite hard to easily show GUI interfaces textually. I don't have anything against it either -- if you are making a Windows-primary thing and using Visual Studio, you should probably either use this or CMake.
 
 ## Debugging C
 
-Debugging C is something a lot of newcomers don't think about at first. 
+Debugging C is something a lot of newcomers don't think about at first, but its necessary as your codebases grow in scope to be able to inspect a program as its running to figure out possible errors.
 
 ### `printf()`
 
@@ -128,64 +270,31 @@ Unfortunately, sanitizers are partially incompatible with each other, and thus t
 
 ### Static Analyzers
 
-## Standards, system libraries, undefined behavior, and the ideal of "Portable Assembly"
+## Standards and versions
 
-A common idea that you might hear if you just go around searching the internet is that C is a sort of "portable assembler".
+C is a _standardized langauge_, meaning there is a set of canonical documents describing it and the runtime, environment and so on. This is a trend that's become less popular in newer languages as compiler development has become more open source, but historically this was valuable to ensure your code didn't accidently rely on vendor specific extensions that would make it difficult to port your code somewhere else.
 
-Dear Reader, I do not believe in being a hater, but this is Extremely False.
+### The Standards
 
-It _may_ have been true after a fashion with the earliest instantiations of C, B and BCPL in the 70s, but it is simply not true today.
+The major versions of C are laid out in the ISO Standards documents. Unfortunately, all of the actual standards documents themselves are behind a decently pricey paywall, so most of the community relies on utilizing the final drafts, since these are almost surely quite close to the final standard.
 
-C has a fairly constrained set of rules a compiler expects you to follow, although you can change the particular quirks of that dialect through compiler flags; in exchange, these extremely advanced compilers can do wildly destructive transformations of what you think your code "should" look into something that will run faster (or hopefully so).
+These standards are
 
-### Standards
+#### C89 (aka ANSI C)
 
-C has a set of language standards, handled through the standardization organization of the ISO; these standards are somewhat ironically not released publicly and require paying for them. Regardless, the draft versions of the standards are free and widely available, and what basically everyone who handles C language tooling will end up reading these instead.
+[Draft avaliable here](https://web.archive.org/web/20200909074736if_/https://www.pdf-archive.com/2014/10/02/ansi-iso-9899-1990-1/ansi-iso-9899-1990-1.pdf).
 
-The C standards define the core language, the abstract C machine, the primary library (libc), and a number of extension elements to libc.
+This is the earliest standardized version of C. Often times, this is the baseline people wanting to make their code generally usable across a wide swatches of platforms will default to. The primary difference between it and later versions are that all variables must be declared at the the start of a block, and several standard types and functions were later added to the library.
 
-- C89  
-    Generally used nowadays as an extremely conservative target to hit, this was the first standardization of C.
+Fun fact: the reference compiler of C89 was actually written in pre-standardized C++!
 
-- C99  
-    This was the second major version and probably the other semi-conservative target people try to hit for general compatibility. In addition to clarifying the language, it also added several features including fixed sized arithmetic types, variable sized structs (_flexible array members_), and runtime sized arrays.
+### C99
 
-- C11  
-    Major version that added support for threads
+C99 is the other major version of C people treat as a generally safe common denominator. The major syntactic additions it added are variably length structs via _flexible array members_, the C++ `//` single line comment style, variable declarations allowed in the middle of a block, and the addition of several types for fixed size arithmetic.
 
-### The Abstract Machine
+### C11
 
-C, as it is defined in the various C standards, are defined around _the C abstract machine_. This is sort of idealized interpreter for the language that defines what would happen if a program executes this behavior. In practice, while C interpreters do exist, most C code is written with the intent of being designed.
-
-### Other standards
-
-The other major set of language standards C relies on is POSIX; which was created as a sort of unified set of common denominators between various Unix and Unix-like systems. These include the rest of the sort of libraries you tend to rely on in Linux for things like parsing arguments, manipulating file descriptors, network programming, and so on, threading support, spawning new processes, and so on.
-
-A lot of stuff you think should be in libc is in fact inside of the POSIX set of libraries; libc does not actually support anything like the ability to iterate over the contents of a directory. To get around this Lua (which heavily relies on just libc) instead uses pattern matching globs to handle it when it occurs.
-
-### Extensions and other things
-
-Most major compilers (GCC, Clang mostly following GCC, and MSVC) often add their own custom extensions to the C language to make it easier to use. The Linux kernel actually relies on a large number of these, and is essentially written in a weird bespoke version of GNU-C; getting it to compile under Clang was an open challenge and I believe still relies on a custom define file.
-
-Additionally, GNU's libc (glibc) adds a number of additional functions not defined anywhere else that software relies on.
-
-MSVC, on the other hand, only supports a some of C99 (but has kept very up to date with C++ standards), and almost all of the operations programs will use instead rely on the Win32 library, which has an entirely distinct set of naming conventions, types, functions and other utilities.
-
-It's also not unusual for very constrained resource devices (embedded) to define their own abstraction layer called a HAL, which often does not look like libc.
-
-### You don't get portability for free
-
-If that seemed like a bit of a long rant about various systems, it's because it was. But it has a point.
-
-The point is -- you do not get portability for free.
-
-The ideal of C you can sell people on is that it's this hyper portable language with a very constrained low-level platform, and as long as you carefully handle code sitting in that space, you can have code that can compile anywhere, from quirked up IBM mainframes running exotic architectures you haven't heard of, to you phone, to your laptop, to the tiny chip running your laundry machine.
-
-And you know what? If you really are careful, C really is a whole lot more portable than other languages! You can write software that can maybe probably work in a whole lot of environments.
-
-But it's not perfect, and almost every platform has a variety of weird quirks, and junk, and functions that don't work how you think you should, and odd defines, or distinct function prototypes. And often times, important things -- like working with threads, or IPC, or spawning new processes, or interacting with hardware, or anything to do with graphics -- are just not defined in a consistent way.
-
-Almost any platform that tries to be portable either accepts its relying on something larger, or creates a set of portability shims/polyfill that implement behavior that most software actually wants, but whose details vary across systems. And this is a lot of work! It often can show up in strange places, and each additional platform you want to support will rely effort and testing on them.
+### The dangers of undefined behavior
 
 It's also very easy to accidentally rely on a piece of implementation specific or even undefined behavior that Just Works on your machine, and it turns out you have created a sea of problems when you want to port your program over to a new platform.
 
@@ -199,7 +308,7 @@ I'm saying this because the ideal that you can get this hyper portable language 
 
 If it turns out an enterprising hobbyist can get your game running on the PSP, that's awesome! But you shouldn't create endless work for yourself to make this possible.
 
-## Weird things you'll see in C
+## Neat tricks and odd things
 
 ### The do/while macro block
 
@@ -230,3 +339,6 @@ if (x > 5) DO_THING(x);
     foo = malloc(sizeof *foo);
 }
 ```
+
+### Typedef of a recursive structure
+
