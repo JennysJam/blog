@@ -6,7 +6,7 @@ title = "What I wished I knew when learning C"
 
 This article is a response/take on both [Daniel Bachler's article on learning F#](https://danielbachler.de/2020/12/23/what-i-wish-i-knew-when-learning-fsharp.html) and [Hillel Wayne's on the hard part of learning a new language](https://www.hillelwayne.com/post/learning-a-language/). I thought it would be educational and a fun excersize to read this article in response to C.
 
-Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development, what tooling to use, or some deeper lore. 
+Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development, what tooling to use, or some deeper lore.
 
 ## Why would I want to use C?
 
@@ -26,11 +26,106 @@ C is many ways a foundational language to other ecosystems -- it is not unusual 
 - When you need to do complex string manipulation
 - when you're doing something that probably should just have GC
 
-## The C compilation model
+## Installing a development enviroment: Toolchains and tools
 
-C has a somewhat peculiar way of compiling things if you're coming from other languages: Normally, you compile each `*.c` file to an object file; then you end up linking these together into a final executable using a linker, and then use some sort of archiving tool to create dynamic or static libraries.
+The set of tools needed to build C are generally refered to as a _toolchain_, which traditionally includes the compiler, assembler, linker, pre-proprocessor and a set of other associated tools. The specifics are toolchain specific but inside of the \*nix world, they mostly follow a similar pattern. You don't need to generally worry about installing a particular part of a compiler since they are packaged together
 
-Thus if you have a project with the files:
+### GCC
+
+GCC (standing for the _Gnu Compiler Collection_) is one of the most common and well known of the major compilers avaliable to devs. It is avaliable for free (and is one of the canonical examples of Free/Open Source software), and generally can be installed via your system package manager. One of the advantages of GCC is it's age: it's a long running complex project, and it also has a number of compiler backend targets you can utilize, as well as a pretty large space of added extensions and utilities. Generally, GCC is the compiler I default to using unless I have a specific reason to choose another, although Clang is equally as worthwhile and useful. 
+
+```shell
+# install on Ubuntu
+> sudo apt install gcc
+```
+
+### Clang
+
+_Clang_ is the other major open source \*nix toolchains, and was developed in part to accept most of the extensions and compiler settings that GCC provides, meaning most software that uses GCC can probably be compiled with Clang. Clang and GCC are mostly compatible in terms of performance, so either are a fine choice unless you're relying on a particular backend or feature. It is also helpful to try and build software with both because it might pick up a number of errors the other might not. One thing Clang provides is that it is (by default, anyway) a cross compiler with the supported backends built in, whereas with GCC you will need to install a build of the compiler for that specific backend.
+
+```shell
+# install on Ubuntu
+> sudo apt install clang
+```
+
+### MSVC
+
+_MSVC_ is Microsofts in house C and C++ Compiler (they treat the barrier between the two languages a bit fuzzier than clang and gcc), and while it is not open source it is freely avaliable. To install it you have to install visual studio (which is _not_ visual studio code, the naming trips me up sometimes too), and versions of the compiler have until recently been strongly bundled with the broader visual studio environment, which you can download [here](https://visualstudio.microsoft.com/downloads/).
+
+While you dont need to actually use the Visual Studio IDE if you don't want to and can instead rely on the standalone CLI tools, it's not unusual that this will cause some problems because those are not natively added to the envirnoment but are instead added to the environment through special shortcuts that open `cmd.exe` with all of the useful commandline files added, see [documentation for details](https://learn.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-170).
+
+One of the smaller benifets of CMake is that, as long as your MSVC is installed in a standard location, CMake can actually pick up on it's location and natively call it's tools for both the configure and build steps.
+
+### Mingw
+
+Mingw (and it's more up to date port Mingw-64) is a port of GCC designed to compile code for Windows, either as cross-compilation or hosted natively.
+Generally speaking, MSVC is _the_ way to build native C/++ code for Windows; Mingw works and can handle compiling a large number of projects but the toolchain has some tradeoffs that using MSVC doesn't, like utilizing an old and undocumented systems library. Unless you have a strong reason to, I would recommend utilizing MSVC if you are building compiler native.
+
+It can be installed on most repos via their package managers, and can also be downloaded [here](https://www.mingw-w64.org/downloads/).
+
+## How should I be writing this: Text editors and IDEs
+
+Since C is so old and utilized on so many platforms, most major text editors have some form of C/++ support, either builtin or through user provided packages.
+
+### Visual Studio Code
+
+Visual Studio Code is a cross-platform general purpose text editor and "light IDE", with a pretty huge repository of official and community supplied plugins. It is responsible for the creation of the [Langauge Service Protocol](https://en.wikipedia.org/wiki/Language_Server_Protocol), which has been adopted in other editors, and is overall a very handy and mature editor for a large variety of langauges. It also has a very useful remote editing mode. This is my go to default.
+
+For setting up C/++ development specifically, these are wonderful tools provided by Microsoft themselves.
+
+- [C/C++ Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools)
+- [CMake Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.cmake-tools)
+- [Makefile Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.makefile-tools)
+
+### Visual Studio
+
+Visual Studio, in addition to hosting the C/++ toolchain and other tools, is a fully featured and fairly rich IDE. It has a number of officially supported plugins for all the major langauges Microsoft supports, and has been working on the C editor experience for years. I don't generally use it, but it's a solid and mature bit of tech, and if you are targetting or developing on Windows it's a solid choice.
+
+### CLion
+
+CLion was developed by Jetbrains, who have built a number of langauge specific editors, and CLion is there C/C++ specific tooling. It generally relies on CMake as its build system, although it can import projects utilizing Makefiles or other constructs. It's a paid IDE and costs about $100/year, or less if you buy the full bundle of Intellisense tools. I quite like CLion, although a few choices (like some of the default formatting) are a bit fiddly and I have to fight against or edit the configs, but is a rich editing environment and I'm happy to have paid for it. Unfortunately it's third party plugin ecosystem is much more sparse than the other code editors on this list.
+
+CLion can be installed [here](https://www.jetbrains.com/clion/).
+
+### Vim
+
+Vim (and it's quasi fork Neovim) is a pretty old and advanced command line based editing environment. By default it only has syntax highlighting for code, but has a pretty huge developer code base so you can absolutely fill up with tons of utility. Generally some of the bigger advantages of Vim is that it's likely to be present most computers, and you can use it if you are developing code remotely via SSH.
+
+## Who should I ask for help: Documentation
+
+### Manpages
+
+The historical way of finding development for C langauge functionality have been the _Manpages_, a database of documentation and a command line client that is pre-installed on almost all *nix style computers. Generally, utilities, the system libraries and many libraries will put documentation in a manpage, which are normally written in a simple type setting system called Roff.
+
+Manpages are ordered into sections which act as namespaces ([See this handy manpage for details](https://man7.org/linux/man-pages/man7/man-pages.7.html)). Generally, the sections you'll want are in section 1 (command line tools), section 2 (syscalls and their wrapper functions), section 3 (library functions), and occasionally section 7 (overview or general topics).
+
+Online versions of the manpages are hosted at several locations ([The linux kernel project mains one](https://man7.org/linux/man-pages/index.html)), but these might have differences from the versions installed on your computer. I would instead recommend the extremely useful [DWWW](https://packages.debian.org/sid/dwww), a local webserver that transforms the manpages into HTML and indexes them to be searchable.
+
+Unfortunately, manpags are slightly out of vogue, so it's not unusual for projects to no longer provide manpages or provide fairly spartan manpages with the expection you'll look elsewhere.
+
+### Gnu Info
+
+Gnu Info was designed to act as an upgrade of sorts to the manpages -- manpages were small and standalone, while Gnu Info was meant to have more of a hyptext-style set of linked pages.
+
+Gnu Info isn't used as much (not even as much as manpages, in my experience), but many Gnu projects utilize it (oftentimes provided a very spartan manpage telling you to look up the information in Info), but otherwise I think it's mostly passed. Even the Gnu projects often provide online HTML or PDF formats for their documentation.
+
+### Locally built documentation: Doxygen
+
+Doxygen is both a tool and general format for providing documentation inline in a C++ file -- while it's not unusual for developors to use doxygen style comments to add documentation to their code but not actually use Doxygen proper, it's still pretty common for older projects.
+
+Notably, the doxygen format allows for some more complicated type settings and for including in other files.
+
+If a project has doxygen documentation, you can build it locally and thus have an up to date version. Active project often host their documentation online, but usually only for the latest or long term release.
+
+### Microsoft Development Network (MSDN)
+
+Microsoft provides documentation for their compilers, language extensions, and libraries on [MSDN](https://learn.microsoft.com/en-us/cpp/?view=msvc-170), and it acts like the manpages for Linux do, often as primary form of documentation.
+
+## The C build process
+
+C has a somewhat peculiar way of compiling things if you're coming from other languages: Normally, you _compile_ each `*.c` file to an _object file_; then you end up linking these together into a final executable using a _linker_.
+
+If you have a project with the files:
 
 - foo.h
 - foo.c
@@ -45,9 +140,48 @@ Compiling it using the traditional unix style toolchain would look like
 > ld main.o foo.o -o main
 ```
 
-This model exists for almost all compilers, although you often do not execute it explicitly but rely on the build tool, or convenience utilities of your compiler to handle the intermediate stuff.
+While I called this model "peculilar", the only element that is unusual is the use of textual inclusion for header files; most other aspects are pretty similar to what most compiled langauges do, the traditional C development environment only makes this pretty explicit.
 
 One of the advantages of this is partial builds -- if you keep around the object files after compiling something, you only need to recompile the object files for the c files you update.
+
+Depending on your build system, the intermediate ouputs of compilation might be stored either in the same directories as the source code (generally refered to as _in tree builds_), or stored in a seperate build directory (_out of tree builds_). Makefile-based projects lean heavily towards in tree builds, and CMake leans heavily towards out of tree.
+
+### Includes and the include path
+
+C has two flavor of ways of including header files
+
+```c
+#include <stdint.h>
+#include "somefile.h>
+```
+
+_Technically_ the definition is implementation defined, but universally the meaning ascribed to these is that `<>` searches through some global set of paths, whereas the `""` include style first searches the local directories for this.
+
+In both cases, there's a set of paths pre-determined by your development environmnet and toolchain, and you can add files to the include path as a command line argument, normally `-I /include/path`. This is relied on heavily by project that move their header files to a seperate directory, although usually that is handled by the build system in some flavor.
+
+### Macros and the preprocessor
+
+The C preprocessor is also, technically, a standalone tool you can run standalone on other files, although the only other major example I can think of is Fortran. It is still quite strongly tied up with the langauge definition, and C macros are required to follow the rules of valid identifiers in C code (although as they are textual macros, you can do _wild_ stuff with them like passing `*` as an argument to a function).
+
+If you ever need to debug macro code, you can call `gcc -E code.c -o code_preprocessed.c` in \*nix land, [MSVC uses distinct arguments](https://stackoverflow.com/questions/3917316/gcc-preprocessor).
+
+### Assembly and the assembler
+
+Technically, the C code to object file pipeline has a 2nd intermediate step where you compile code to a format that is (in some ways) a textual representation of what native code for your target architecture looks like, traditionally called _assembly_, which is transformed into native code using an _assembler_. This format is normally not output unless you specifically ask for it. On \*nix machines it traditionally has the file extension `.s` or `.S` (if you use the preprocessor), while on Windows it is `.asm`.
+
+In addition to it being useful to look at a textual output of your final code, you can also write files in Assembly and manually invoke the assembler like `as foo.s -o foo.o`. This is usually something you don't need but is sometimes used if you need extreme performance and need to handtune the output of your code, or for operating systems that need to provide the low leve implemtations of system calls that cannot otherwise be done in C.
+
+Note that assembly syntax is _extremely_ target and vendor specific -- each machine architecture probably has it's own syntax and quirks, and the X86 family of architectures makes sure to go the extra mile by having _two_ syntaxes, and even two competing assemblers might differ in details beyond the base syntax.
+
+### Linkage and the linker
+
+The final step of the traditional build pipeline is _linking_, where you take all of the intermediate code in the object files and fuse them together into a final executable or library. This step involves laying out sections of data in the executable, and making sure that function calls to functions defined outside of an object file are correctly linked up.
+
+There is a custom langauge to control and manipulate how the linker behaves called _linker script_. Unless you are writing a compiler this a pretty rare format to interact with. [McYoung has a fantastic guide to the details of what interacting with linker script is like](https://mcyoung.xyz/2021/06/01/linker-script/).
+
+### Bundling libraries
+
+In \*nix land you normally build a static library via utilizing `ar` (originally an archive manager) to bundle all of your files together, and shared libraries via a special flag to the compiler. While these create file that toolchain (and for dynamic files, the loader) to use, there normally is a more complex set of steps for actually bundling code to distribute to other libraries.
 
 ## The C Environment
 
@@ -148,13 +282,33 @@ int main(int argc, char* argv[]) {
 
 After Threads and threading became common, `errno` shifted from being truly global to being a `thread_local` value, which means there is one errno value for each thread.
 
-Errno is something most C projects only interact with to see if a standard library has failed.
+Errno is something most C projects only interact with to see if a standard library has failed, it is quite rare for code that isn't in libc or the posix extended libraries to change it to indicate error.
+
+### Memory allocation
+
+C requires you to handle memory allocation yourself, and does so through a standard set of a few functions to map new memory in and make it avaliable to the user.
+
+- `malloc(size)` to allocate new storage for values
+- `realloc(pointer, new_size)` to adjust or re-allocate a current bit of storage
+- `free(pointer)` to release memmory so it can be used later by another allocation
+
+### Nonloacl control flow
+
+The C stdlib exposes two special functions (and commonly more) called `setjmp()` and `longjmp()` 
 
 ## Libraries
 
 Whenever you need to rely on behavior that's not built into the langauge, you'll have to rely on a _library_. Libraries are a way of tying together functions for performing actions as well as interacting with the host systems. For instance, _SDL_ is a library with functions that let you draw things to a screen; _libjson_ is a library with functions for parsing and serializing data to the JSON interchange format.
 
-There's two functional varieties of libraries in use: static and dynamic libraries.
+There's two functional varieties of libraries in use: static and dynamic libraries, both utilizing header files to define their interfaces.
+
+### Header Files
+
+_Header files_ are not technically considered a distinct construct by the C standard, but are so defacto their built into the naming convention of files: files meant to be `#include` use a file extension of `.h`.
+
+Header files are often used internally in projects to logically seperate details of a project seperate, and often it's normal for there to be a pair of `.c` and `.h` files for one part of a program, e.g. `parser.h` and `parser.c` for the code in a compiler to parse code.
+
+Header files are also used to describe the interface a library exposes to consumers of a library: normally header files contain prototypes for functions that the library implement, definition of types for them to operate on, and macros for both utility and to describe architecture specific behavior. The only way for a library to expose it's functions and constructs is via a set of header files.
 
 ### Static Libraries
 
@@ -184,6 +338,10 @@ In addition to libc, a few other libraries exist in the sort of special place wh
 
 - libm, which implements several math functions
 - libdl, which implements functions for working with dynamic libraries 
+
+### Header only libraries
+
+Header only libraries are more of a concept in the C++ world, but do seem some usage in C. Because of the complexity of build systems and wide range of practices, sometimes developers take advantage of the way `inline` allows for multiple definitions in a project to provide both the prototypes and implementations in a header file, which means that once you have the downloaded somewhere on the system you have no additional work to build it with aside from `#include <headeronly.h>`.
 
 ## C Build Systems
 
@@ -278,7 +436,9 @@ C is a _standardized langauge_, meaning there is a set of canonical documents de
 
 The major versions of C are laid out in the ISO Standards documents. Unfortunately, all of the actual standards documents themselves are behind a decently pricey paywall, so most of the community relies on utilizing the final drafts, since these are almost surely quite close to the final standard.
 
-These standards are
+These aren't just hypotheticals -- GCC and Clang both take an option specificying which version of the standard you want to adhere too. Companies or individual projects often will strongly specify what standard is allowed, and different standards expose specific functionality.
+
+Developers interested in portability often target older versions of the standard, usually either C89 or incresingly C99. If you utilize the command line arguments to select a particular dialect, you might end up disabling access to some of the functions specified by POSIX or your local environment.
 
 #### C89 (aka ANSI C)
 
@@ -288,11 +448,45 @@ This is the earliest standardized version of C. Often times, this is the baselin
 
 Fun fact: the reference compiler of C89 was actually written in pre-standardized C++!
 
-### C99
+#### C99
 
-C99 is the other major version of C people treat as a generally safe common denominator. The major syntactic additions it added are variably length structs via _flexible array members_, the C++ `//` single line comment style, variable declarations allowed in the middle of a block, and the addition of several types for fixed size arithmetic.
+[Draft avaliable here](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf)
 
-### C11
+C99 is the other major version of C people treat as a generally safe common denominator. The major syntactic additions it added are variably length structs via _flexible array members_ and _variable length arrays_ (later walked back in C11), commplex number types, the C++ `//` single line comment style, variable declarations allowed in the middle of a block, and the addition of several types for fixed size arithmetic.
+
+#### C11
+
+[Draft avaliable here](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1548.pdf)
+
+C11 makes some of the new addition in C99 (like variable length arrays) optional. It also adds a limited form of compile time generics via the `_Generic` directive, as well as support for threads and associated multi-threading primitives.
+
+#### C17
+
+[Draft avalaible here](https://files.lhmouse.com/standards/ISO%20C%20N2176.pdf)
+
+C17 was a pretty small standard that added few things, and mostly depreceated or clarified positions in the C11 draft.
+
+#### C2X
+
+[Current working draft here](https://open-std.org/JTC1/SC22/WG14/www/docs/n3096.pdf)
+
+The current version of the standard being worked on appears to be a major change and thus this section likely to be out of date soon, this has changed a number of technical details (several old macros have now become keyword), introduced C++ style attributes, a preprocessor directive used for embedding files directly as binary arrays.
+
+### POSIX
+
+POSIX refers to a set of specifications made in the 90s and later updated, trying to find the minimal common set of library interfaces, tools and behavior that were in common between them. The libraries defined in POSIX are the "rest" [and a quick listing is avaliable here](https://en.wikipedia.org/wiki/C_POSIX_library).
+
+### Glibc and GCC extensions
+
+GCC and the GNU Projects major libc implementation (`glibc`) provide a huge number of extension functions and utilities, and software has come to rely on it. Like Windows, the glibc developers have focused on backwards compatbility, so it acts as a bit of a de facto standard much like the Win32 environment does.
+
+### The Win32 Environment
+
+While Windows doesn't define any sort of standard describing it's libraries and interfaces, Microsoft has a pretty extreme dedication to reverse compatbility that means you can effectively rely on the Win32 C environment to act as a stable environment to build software against.
+
+## Portability, Undefined behavior, and memory safety
+
+### Defined and undefined behavior
 
 ### The dangers of undefined behavior
 
@@ -307,6 +501,31 @@ This isn't a pure hypothetical, or for dealing with weird out of the way platfor
 I'm saying this because the ideal that you can get this hyper portable language that you're software can run with on almost any platform can be intoxicating, but it's just no true. You should embrace this fact, and prioritize testing and development on the platforms you realistically want to support.
 
 If it turns out an enterprising hobbyist can get your game running on the PSP, that's awesome! But you shouldn't create endless work for yourself to make this possible.
+
+
+## Dependency management
+
+Or, _where **are** libraries exactly...?_
+
+In what has probably become a theme now, C is old enough that it predates the sorts of environments that necessitate handling depencies and libraries.
+
+### System wide package manager
+
+This is a bit more of a Linux construct, but probably one of the default ways many software engineers rely on is using the system wide package manager and relying on your local distribution managers to have built and packaged up a library, header files, and any other additional configuration details in a well known place.
+
+For instance, if I want to use the cryptology library, then I can pull install `libopenssl` (and on most systems, the other necessary build items in `libopenssl-dev`) via the command line and begin developing my application.
+
+```shell
+> sudo apt install openssl openssl-dev
+```
+
+This is one of those things where most of the time, it _just works_ no problems asked. It also has some nice advantages: if you are distributing your code as source, then you can build it and link it against the one installed on your system and can rely on things that are baked into the vendored version.
+
+Unfortunately, if you are using a rarer library, an older or newer version than supported, or performing cross or are relying on certain features or properties that the packager for your system has opted against it, then you might need to rely on another method anyway.
+
+### Git submodules and building the library as part of the build step
+
+### Manual vendoring
 
 ## Neat tricks and odd things
 
@@ -342,3 +561,13 @@ if (x > 5) DO_THING(x);
 
 ### Typedef of a recursive structure
 
+Sometimes you need to use the name of a structure within itself; one of the most ergnomic ways I know of doing this is using both the tag name inside of a typedef itself.
+
+```c
+typedef struct Object {
+    int type;
+    struct Object* next_object;
+    char name[32];
+    void (*finalizer)(Object* object, void* data);
+} Object;
+```
