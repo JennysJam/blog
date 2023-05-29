@@ -279,13 +279,43 @@ CMake also tends to change the layout of projects -- while Make-style targets us
 
 Generally I use CMake if I expect the project to be bigger, involve a lot of fiddly logic, or if I'm using C++. It has a bit of a nasty reputation, but as long as you internalize a good way of structuring things I find it isn't too bad, just verbose. I prefer using most of the style suggestions in [An Introduction to Modern CMake](https://cliutils.gitlab.io/modern-cmake/).
 
-### Visual Studio
+### Visual Studio build system
 
 Visual Studio C has it's own format (which is a specialized XML file) and build tool; but really would rather you edit it via an exposed gui interface. I've used it a decent ammount, but it's quite hard to easily show GUI interfaces textually. I don't have anything against it either -- if you are making a Windows-primary thing and using Visual Studio, you should probably either use this or CMake.
 
+## Automatic code hygeine and formatting
+
+Especially when writing C, it is useful to have tools that look for errors or other issues in static code as well as utilizing runtime debugging. These can be useful for automatic CI/CD checking of pull requests or code being added to master.
+
+### Compiler warnings
+
+The first line of defense is compiler warnings -- by default, the C compiler will actually let a whole lot of possible errors it can detect statically fall through, and it is considered best practice to turn these on. Normally compilers provide flags for both individual warnings, and bundles of warnings grouped together you can enable. In GCC and Clang that usually looks like `-Wall` or `Wall -Wextra`, and in MSVC it looks like `/W4`.
+
+Additionally, an IDE might take advantage of the flagged errors to show possible issues to you.
+
+Note that even using these bundles might not enable every possible warning
+
+### Compiler warnings as errors
+
+Compilers also include the option to make any detected compiler warning an error; in MSVC land this is `/WX` and in GCC/Clang land it's `-Werror`. This is generally considered best practice, but a bit of a controversial one: some of the more advanced warnings in the compilers can act more like style guide rules, or flag situations that are unlikely to be an error most of the time, leading to something akin to alarm fatique.
+
+At least in GCC, it is possible to [manually specify only some warnings as errors](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Werror_003d), which is probably the best choice for when adding aditional code rigour to an existing code base without it.
+
+If you are developing greenfield code, it is probably worthwhile to enable it.
+
+### Clang Format
+
+Clang format is a configurable automatic code formater in the style of `gofmt`, though in the spirit of C's heterogenous environment is widely configurable and has like 9 baked in pre-sets you can modify. I've never really used clang format, but most open source project's I've looked have a `.clang-format` configuration file sitting somewhere in the top level of the codebase. Like a lot of other tools, it might be more useful to introduce this during greenfield development that add in later.
+
+### Static Analysis Tools and Linters
+
+While the compiler can act as a primary sort of static code analysis warning, since it already has a pretty intimate view of the codebase while its compiling, more complex or advanced tools designed around checking and verifying C code have sprouted. However, their use always seems to be kind of rare -- I've used CppCheck twice, and I'm not aware of many open source projects that utilize them, but I could be totally mistaken. It also seems like until somewhat recently, these were mostly the domain of commercial software that was normally outside of personal developers budgets.
+
+The main ones I'm aware of that are free are clang-tidy and cppcheck, both of which are open source and easily avaliable.
+
 ## Debugging C
 
-Debugging C is something a lot of newcomers don't think about at first, but its necessary as your codebases grow in scope to be able to inspect a program as its running to figure out possible errors.
+Debugging C is something a lot of newcomers don't think about at first, but its necessary as your codebases grow in scope to be able to inspect a program as its running to figure out possible errors. Getting comfortable with debugging techniques and tools are absolutely necessary for long-term maintaince.
 
 ### `printf()`
 
@@ -312,8 +342,6 @@ It has a pretty major speed overhead, which may make it difficult to use for som
 Sanitizers perform similar tasks to Valgrind (finding higher level errors at runtime), but unlike Valgrind does not require loading the binary into an interpreter; instead all of the runtime checks and tooling are installed into the binary during compile time, allowing you to simply run the binary like normal and only seeing errors if one occurs.
 
 Unfortunately, sanitizers are partially incompatible with each other, and thus the permutation of sanitizers you can have enable at once is constrained; in particular UBSan and ASAN are not compatible together.
-
-### Static Analyzers
 
 ## Standards and versions
 
@@ -373,9 +401,19 @@ While Windows doesn't define any sort of standard describing it's libraries and 
 
 ## Portability, Undefined behavior, and memory safety
 
-### Defined and undefined behavior
+Undefined behavior is one of the other major weird parts of C, and something every developer is probably going to run up against.
 
-### The dangers of undefined behavior
+### The hierarchy of behavior
+
+The C standards provides a sort of hierarchy of how conformat code can be to the standard. Like a lot of the C standard, the combination of legal-like langauge with a prose description of the operational semantics of a language are kind of mistifying at first if you are not familiar with it.
+
+- Specified behavior: Code whose behavior an implementation of C must handle, and the result of which is expected to be the same accross compilers.
+- Implemention defined behavior: Code that a legal implementation of C must handle, but the result of which can be set by the implementation.
+- Undefined behavior: Code that a conforming implementation of C is not required to handle, and the standard makes no requirements on what may occur -- the implementation is not at all constrained about what to do, and may (in the legalistic terms) do "anything".
+
+Both implementation defined behavior and _especially_ undefined behavior can provide accidental problems for developers, because it's possible (and easy!) to write code that causes undefined behavior. More 
+
+### Accidental non-portability
 
 It's also very easy to accidentally rely on a piece of implementation specific or even undefined behavior that Just Works on your machine, and it turns out you have created a sea of problems when you want to port your program over to a new platform.
 
