@@ -2,15 +2,17 @@
 title = "What I wished I knew when learning C"
 +++
 
-# What I wish I knew when learning C
+# What I wished I knew when learning C
 
-This article is a response/take on both [Daniel Bachler's article on learning F#](https://danielbachler.de/2020/12/23/what-i-wish-i-knew-when-learning-fsharp.html) and [Hillel Wayne's on the hard part of learning a new language](https://www.hillelwayne.com/post/learning-a-language/). I thought it would be educational and a fun excersize to read this article in response to C.
+This article is a response/take on both [Daniel Bachler's article on learning F#](https://danielbachler.de/2020/12/23/what-i-wish-i-knew-when-learning-fsharp.html) and [Hillel Wayne's on the hard part of learning a new language](https://www.hillelwayne.com/post/learning-a-language/). I thought it would be educational and a fun exercise to read this article, but covering C.
 
-Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development, what tooling to use, or some deeper lore.
+Often teaching tutorials don't focus as much on the surrounding ecosystem of how to do development, what tooling to use, or some deeper lore. Almost all of this stuff is generally documented (and where a good source exists, I'll try and add a link), but there's nowhere that has attempted to create a consistent, coherent listing of most of this information.
+
+This document is almost certainly incomplete! There's lots of information out there, and I probably got some of it wrong. I'm also not at all familiar with many ecosystems, like the Mac, and thus can't really speak to it.
 
 ## Why would I want to use C?
 
-C is many ways a foundational language to other ecosystems -- it is not unusual for other programming languages to depend partly or completely on a C compiler to bootstrap it's compiler or runtime, many languages use C as the defacto Foreign Function Interface, and for several systems system utilities are exposed as C libraries you call into.
+C is many ways a foundational language to other ecosystems -- it is not unusual for other programming languages to depend partly or completely on a C compiler to bootstrap it's compiler or runtime, many languages use C as the defacto Foreign Function Interface, and for several systems system utilities are exposed as C libraries you call into. If the question of "Should I write this in C?" comes up, it's totally possible you might not have any other major options.
 
 - When you want to add extensions to multiple programming languages
 - When you need to interface with a system or user library that only exposes a C API.
@@ -21,10 +23,19 @@ C is many ways a foundational language to other ecosystems -- it is not unusual 
 ## Why would I _Not_ want to use C
 
 - C is a memory unsafe language, and you have to manage memory management yourself.
+- When you are working with code that needs to secure or handle untrusted input.
 - When performance isn't important, but speed of development or utility is, like in scripting or exploratory programming.
-- When you need to do complex string manipulation
+- When you need to do complex string manipulation.
 - when you need to have a large set of mature, well developed data structures and algorithms.
-- Any time where you expect to be relying on generic code.
+- When you are working with complex graphs of varying objects that have non-trivial lifetimes, and thus would benefit from a garbage collector.
+
+## Where can I run C code?
+
+C is almost always compiled (although interpreters do exist), so generally anywhere that can run native code and you have a compiler you can run C. C also can be compiled to [wasm or javascript through Emscripten](https://emscripten.org/), and thus you can run C code in the browser. 
+
+## The C++ (And Objective-C) connection
+
+You often hear C and C++ mentioned in the same breath, or together as C/++, and that's because while these languages are often quite different, they have close histories and C++ includes almost all of the language elements and standard library functions that C does. All of the major compilers (MSVC, GCC, Clang) all can ingest both C++ and C (and Objective-C!), so using code written in C++ from C (or sometimes vice versa, called Hermetic C++). Despite this, the languages have different cultures, norms, and ways of doing things, and often people lean towards using one language or the other than more freely mixing them.
 
 ## Installing a development environment: Toolchains and tools
 
@@ -353,7 +364,7 @@ These aren't just hypotheticals -- GCC and Clang both take an option specificizi
 
 Developers interested in portability often target older versions of the standard, usually either C89 or increasingly C99. If you utilize the command line arguments to select a particular dialect, you might end up disabling access to some of the functions specified by POSIX or your local environment.
 
-## Pre-standardization C
+### Pre-standardization C
 
 C existed as a existed as a language for at least 18 years before the committee formed that would create the C standards, and during that time almost every vendor would develop it's own compiler with it's own features and syntax extensions. The closest thing that existed to a standard was the textbook written by some of C's original developers, [The C Programming Language](https://en.wikipedia.org/wiki/The_C_Programming_Language), and the details of the language shown in the first edition are sometimes called K&R C.
 
