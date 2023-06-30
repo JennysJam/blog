@@ -7,7 +7,9 @@
 {% block content %}
     {{ section.content | safe }}
 
+    <h2>Sections</h2>
     {% for secstr in section.subsections %}
+        
         <section class="sectiondiv">
             {% set sec = get_section(path=secstr) %}
             <h2><a href = "{{sec.permalink}}">{{sec.title}}</a></h2>
