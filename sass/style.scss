@@ -42,3 +42,14 @@ pre {
     padding-top: 1rem;
     padding-bottom: 1rem;
 }
+
+section.sectiondiv {
+    margin: 0;
+    margin-left: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+section.sectiondiv > p {
+    margin: 0;
+    margin-left: 1rem;
+}

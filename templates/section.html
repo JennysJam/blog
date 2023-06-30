@@ -8,16 +8,13 @@
     {{section.content | safe}}
 
     {% for page in section.pages %}
-        <section>
-            <h3>{{ page.title }}</h3>
+        <section class="sectiondiv">
+            <h2><a href="{{page.permalink}}"> {{ page.title | safe }} </a> </h2>
             <p>
-                {{ page.description }}
+                <i>{{page.date}}</i>
                 <br>
-                <a href="{{page.path}}">permalink</a>
+                {{ page.description | safe }}
             </p>
-            {% if not loop.last %}
-                <hr>
-            {% endif %}
         </section>
     {% endfor %}
 {% endblock content%}

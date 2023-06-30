@@ -5,10 +5,15 @@
 {% endblock title%}
 
 {% block content %}
-    <h2>{{section.title}}</h1>
+    {{ section.content | safe }}
 
-
-    {{ section.content | safe}}
+    {% for secstr in section.subsections %}
+        <section class="sectiondiv">
+            {% set sec = get_section(path=secstr) %}
+            <h2><a href = "{{sec.permalink}}">{{sec.title}}</a></h2>
+            <p>{{ sec.description }}</p>
+        </section>
+    {% endfor %}
 
 {% endblock content%}
 

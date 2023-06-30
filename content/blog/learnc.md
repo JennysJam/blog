@@ -1,5 +1,7 @@
 +++
 title = "What I wished I knew when learning C"
+date = 2023-06-30
+description = "An overview of the C ecosystem and associated environment"
 +++
 
 # What I wished I knew when learning C

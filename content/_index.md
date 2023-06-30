@@ -1,10 +1,8 @@
 +++
 title="jenny jams blog"
+description = "No one knows your an over educated dog on the internet"
 +++
 
-Here is the front page of my blog!
+# Jenny Jam Blog
 
-Check out my...
-
-* [blog!](/blog)
-* [revews!](/reviews)
+Here is the front page of my blog! I like talking about programming, art, and trashy books.
