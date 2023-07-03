@@ -1,9 +1,12 @@
 html {
-    background-color: blanchedalmond;
+    background-color: #edd9be;
 }
 
+$bodycolor : #C9A761; // #C9A761, #B3915F
+$codeprecolor: #B3915F;
+
 body {
-    background-color: burlywood;
+    background-color: $bodycolor;
     min-width: 60%;
     width: 600px;
     max-width: 80%;
@@ -27,7 +30,7 @@ section > h3 {
 }
 
 hr {
-    background-color: goldenrod;
+    background-color: #daa520;
     border-color:goldenrod;
     border-left: 0px;
     border-right: 0px;
@@ -37,8 +40,8 @@ pre {
     font-size: 16;
     border-radius: 1rem;
     border-width: 5px;
-    background-color: rgb(163, 151, 125);
-    border-color: rgb(116, 101, 69);
+    background-color: $codeprecolor;
+    border-color: $codeprecolor;
     padding-left: 2rem;
     padding-right: 2rem;
     padding-top: 1rem;
@@ -61,72 +64,102 @@ section.sectiondiv > p {
  background-color: #2b303b;
 }
 */
-
+pre > code > * {
+    font-size: 1.1rem;
+}
+.z-code {
+    color: #19364D; // #224966;
+}
 .z-variable.z-parameter.z-function {
- color: #ddc76f;
+ color: #19364D;
 }
 .z-comment, .z-punctuation.z-definition.z-comment {
     font-style: italic;
-    color: #9bb9d0;
+    color: #5E7D95;
 }
 .z-punctuation.z-definition.z-string, .z-punctuation.z-definition.z-variable, .z-punctuation.z-definition.z-string, .z-punctuation.z-definition.z-parameters, .z-punctuation.z-definition.z-string, .z-punctuation.z-definition.z-array {
  color: #c0c5ce;
+}
+
+//# CCAD2F
+.z-punctuation.z-definition.z-string {
+    color: #CCAD2F;
+}
+
+.z-support.z-function.z-echo {
+    color: #224966;
 }
 .z-none {
  color: #c0c5ce;
 }
 .z-keyword.z-operator {
- color: #c0c5ce;
+ color: #19364D;
 }
 .z-keyword {
- color: #d26449;
+    font-weight: bold;
+    color: #224966;
 }
 .z-variable {
- color: #a7686e;
+ color: #19364D;
 }
-.z-entity.z-name.z-function, .z-meta.z-require, .z-support.z-function.z-any-method {
- color: #5eb7b9;
- font-weight: bold;
+
+.z-variable.z-parameter {
+    color: #19364D;
+    font-style: italic;
 }
-.z-support.z-class, .z-entity.z-name.z-class, .z-entity.z-name.z-type.z-class {
- color: #ebcb8b;
- font-weight: bold;
+.z-entity.z-name.z-function {
+//  font-weight: bold;
+ color: #81ABCC;
 }
-.z-meta.z-class {
- color: #eff1f5;
+.z-entity.z-name.z-struct, .z-entity.z-name.z-type,z.entity.z-name.z-class {
+    color: #81ABCC;
+    font-weight: bold;
 }
-.z-keyword.z-other.z-special-method {
- color: #e16049;
-}
+
+// .z-support.z-class, .z-entity.z-name.z-class, .z-entity.z-name.z-type.z-class {
+//  color: #ebcb8b;
+//  font-weight: bold;
+// }
+// .z-meta.z-class {
+//  color: #eff1f5;
+// }
+// .z-keyword.z-other.z-special-method {
+//  color: #e16049;
+// }
 .z-storage {
- color: #b18daa;
+ color: #224966;
+ font-weight: bold;
 }
 .z-support.z-function {
- color: #8ad1cf;
+ color: #19364D;
 }
-.z-string, .z-constant.z-other.z-symbol, .z-entity.z-other.z-inherited-class {
- color: #97c66d;
+// .z-string, .z-constant.z-other.z-symbol, .z-entity.z-other.z-inherited-class {
+//  color: #84B370;
+// }
+.z-string {
+    color: #7E801D; //#84B370;
 }
+
+.z-constant.z-other.z-symbol {
+    color: #84B370;
+    font-weight: bold;
+}
+
 .z-constant.z-numeric {
- color: #d08770;
+ color: #CCAD2F;
 }
-.z-none {
- color: #d08770;
-}
-.z-none {
- color: #d08770;
-}
-.z-constant {
- color: #d08770;
-}
+
 .z-entity.z-name.z-tag {
- color: #bf616a;
+ color: #19364D;
+ font-weight: bold;
 }
 .z-entity.z-other.z-attribute-name {
- color: #d08770;
+ color: #19364D;
+ font-style: italic;
 }
 .z-entity.z-other.z-attribute-name.z-id, .z-punctuation.z-definition.z-entity {
- color: #8fa1b3;
+ color: #19364D;
+ font-style: italic;
 }
 .z-meta.z-selector {
  color: #b48ead;
@@ -138,7 +171,7 @@ section.sectiondiv > p {
  color: #8fa1b3;
 }
 .z-keyword.z-other.z-unit {
- color: #d08770;
+ color: #19364D;
 }
 .z-markup.z-bold, .z-punctuation.z-definition.z-bold {
  color: #ebcb8b;
