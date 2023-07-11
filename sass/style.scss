@@ -1,9 +1,25 @@
+$bg-color : #FFF5E6;
+$body-color: #ffebcd;
+$code-color: #E8D7AE;
+$font-color: #453620;
+
+$dark-blue: #354262; // #354262
+$blue: #AEC0E8;
+$dark-purple: #71659C; // #453D62
+$purple: #B2A2E8;
+$dark-green: #84989C;
+$green: #BAE0E8;
+$redpink: #E8A2C0;
+$cobalt: #97B0E8;
+$lightgreen: #C5E8C7;
+
 html {
-    background-color: blanchedalmond;
+    background-color: $bg-color;
+    color: $font-color;
 }
 
 body {
-    background-color: burlywood;
+    background-color: $body-color;
     min-width: 60%;
     width: 600px;
     max-width: 80%;
@@ -52,4 +68,9 @@ section.sectiondiv {
 section.sectiondiv > p {
     margin: 0;
     margin-left: 1rem;
+}
+
+code, code > *, pre>code>* {
+    background-color: $code-color;
+    color: #71659C;
 }
