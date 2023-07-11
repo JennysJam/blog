@@ -12,10 +12,17 @@ $green: #BAE0E8;
 $redpink: #E8A2C0;
 $cobalt: #97B0E8;
 $lightgreen: #C5E8C7;
+$darkred: #5E3F4C;
+
 
 html {
     background-color: $bg-color;
     color: $font-color;
+}
+
+a {
+    color: #596771;
+    font-weight:bold;
 }
 
 body {
@@ -53,10 +60,18 @@ pre {
     border-radius: 1rem;
     border-width: 5px;
     border-color: #2b303b;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     padding-top: 1rem;
     padding-bottom: 1rem;
+}
+
+blockquote {
+    padding: 0.3rem 1rem;
+    margin: 0;
+    margin-left: 1.5rem;
+    border-left: 3px solid $font-color;
+    font-style: italic;
 }
 
 section.sectiondiv {
@@ -70,7 +85,57 @@ section.sectiondiv > p {
     margin-left: 1rem;
 }
 
-code, code > *, pre>code>* {
+code {
     background-color: $code-color;
-    color: #71659C;
+    border-radius: 1rem;
+    padding: 0.1rem 0.5rem;
+}
+
+pre,pre>code {
+    background-color: $code-color;
+    color: $dark-blue;
+    font-size: 1rem;
+    line-height: 1.3rem;
+}
+
+.z-keyword, .z-type, .z-storage {
+    color:$dark-green;
+    font-weight: bold;
+}
+
+.z-string, .z-string  {
+    color:#444A42;
+}
+
+.z-entity.z-name.z-class, .z-entity.z-name.z-struct {
+    font-weight: bold;
+    color: $dark-purple;
+}
+
+.z-entity.z-name.z-function {
+    color:#5E3F4C;
+    font-weight: bold;
+}
+
+.z-support.z-function {
+    color:#5E3F4C;
+}
+
+.z-keyword.z-operator {
+    color: $dark-blue;
+    font-weight: bold;
+}
+
+// .z-constant {
+//     color:$dark-green;
+//     font-weight: bold;
+// }
+
+.z-constant.z-numeric, .z-numeric {
+    color: #5E3F4C;
+}
+
+.z-comment {
+    color: #5E4A2B;
+    font-style: italic;
 }
