@@ -72,7 +72,7 @@ bool inFromHeap(Heap* heap, void* ptr) {
   }
 }
 
-static void* heapAlloc(VM* vm, size_t size);
+static void* heapAlloc(Heap* vm, size_t size);
 
 void assert(int condition, const char* message) {
   if (!condition) {
@@ -121,7 +121,7 @@ Object* forward(VM* vm, Object* object) {
   
   if (object->type == OBJ_FRWD) return object->forward;
 
-  Object* copied = heapAlloc(vm, sizeof(Object));
+  Object* copied = heapAlloc(vm->heap, sizeof(Object));
   vm->numObjects++;
   memcpy(copied, object, sizeof(Object));
   // thread copied object into worklist
@@ -182,8 +182,7 @@ void gc(VM* vm) {
          vm->numObjects);
 }
 
-void* heapAlloc(VM* vm, size_t size) {
-  Heap* heap = vm->heap;
+void* heapAlloc(Heap* heap, size_t size) {
   assert(heap->bump_offset + size < HEAP_MAX, "Attempted to allocate more items that can be in heap");
   void* pointer = NULL;
 
@@ -200,7 +199,7 @@ void* heapAlloc(VM* vm, size_t size) {
 Object* newObject(VM* vm, ObjectType type) {
   if (vm->numObjects == vm->maxObjects) gc(vm);
 
-  Object* object = heapAlloc(vm, sizeof(Object));
+  Object* object = heapAlloc(vm->heap, sizeof(Object));
   object->type = type;
   vm->numObjects++;
 
