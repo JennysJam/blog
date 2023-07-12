@@ -50,7 +50,7 @@ def evacuate(ptr):
 
 ## Show me the code!
 
-The code for this listing originally came from [](). For convenience, i'm hosting the update version on my blog here:
+The code for this listing originally came from. For convenience, i'm hosting the update version on my blog here:
 
 - [main.c](main.c)
 - [COPYRIGHT](COPYRIGHT)

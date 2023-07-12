@@ -201,6 +201,7 @@ Object* newObject(VM* vm, ObjectType type) {
 
   Object* object = heapAlloc(vm->heap, sizeof(Object));
   object->type = type;
+  sizeof(Object);
   vm->numObjects++;
 
   return object;
