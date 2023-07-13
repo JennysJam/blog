@@ -56,8 +56,13 @@ The code for this listing originally came from. For convenience, i'm hosting the
 - [COPYRIGHT](COPYRIGHT)
 - [Makefile](Makefile)
 
+## The worlds simplest allocator
+
+
 
 ## The world's smallest allocator, twice
+
+![sample](sample.drawio.svg)
 
 Unlike mark and sweep, a copying collector relies on it's allocator to free memory, and thus we cannot use the standard library `malloc()` and `free()` function. Thus, we will need an allocator!
 

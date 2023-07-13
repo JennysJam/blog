@@ -3,10 +3,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <signal.h>
+#include <stdint.h>
+
 
 #define STACK_MAX 256
 #define INIT_OBJ_NUM_MAX 8
-#define HEAP_MAX 65536
+#define HEAP_MAX 256
 
 typedef enum {
   OBJ_INT,
@@ -193,6 +195,7 @@ void* heapAlloc(Heap* heap, size_t size) {
     pointer = heap->region_kiki + heap->bump_offset;
   }
   heap->bump_offset += size;
+  assert(((uintptr_t)(pointer)) % 8 == 0, "Pointer must be 8 byte aligned");
   return pointer;
 }
 
