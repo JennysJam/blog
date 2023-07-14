@@ -8,7 +8,8 @@
 
 #define STACK_MAX 256
 #define INIT_OBJ_NUM_MAX 8
-#define HEAP_MAX 256
+#define HEAP_MAX 65536
+#define DEFAULT_ALIGN 8
 
 typedef enum {
   OBJ_INT,
@@ -184,6 +185,14 @@ void gc(VM* vm) {
          vm->numObjects);
 }
 
+void* align_up(void* ptr) {
+  uintptr_t value = (uintptr_t) ptr;
+  value = (value + (DEFAULT_ALIGN-1)) & -DEFAULT_ALIGN;
+  assert(value % DEFAULT_ALIGN == 0, "Pointer must be aligned to DEFAULT_ALIGN");
+  return (void*) value;
+}
+
+
 void* heapAlloc(Heap* heap, size_t size) {
   assert(heap->bump_offset + size < HEAP_MAX, "Attempted to allocate more items that can be in heap");
   void* pointer = NULL;
@@ -195,7 +204,7 @@ void* heapAlloc(Heap* heap, size_t size) {
     pointer = heap->region_kiki + heap->bump_offset;
   }
   heap->bump_offset += size;
-  assert(((uintptr_t)(pointer)) % 8 == 0, "Pointer must be 8 byte aligned");
+  pointer = align_up(pointer);
   return pointer;
 }
 
@@ -204,7 +213,6 @@ Object* newObject(VM* vm, ObjectType type) {
 
   Object* object = heapAlloc(vm->heap, sizeof(Object));
   object->type = type;
-  sizeof(Object);
   vm->numObjects++;
 
   return object;
@@ -249,6 +257,7 @@ void objectPrint(Object* object) {
 void freeVM(VM *vm) {
   vm->stackSize = 0;
   gc(vm);
+  free(vm->heap);
   free(vm);
 }
 
