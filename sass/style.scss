@@ -35,6 +35,12 @@ a {
     font-weight:bold;
 }
 
+img {
+    display:block;
+    margin: 0 auto;
+    width: 30%;
+}
+
 body {
     background-color: $body-color;
     min-width: 60%;

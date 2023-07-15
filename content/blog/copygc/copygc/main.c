@@ -204,7 +204,6 @@ void* heapAlloc(Heap* heap, size_t size) {
     pointer = heap->region_kiki + heap->bump_offset;
   }
   heap->bump_offset += size;
-  pointer = align_up(pointer);
   return pointer;
 }
 
