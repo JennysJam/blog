@@ -12,10 +12,10 @@ I thought this would be cool because the original code already has a tiny but fu
 
 ## Source code for this article
 
-The source code can be found [here](copygc/main.c)
+The source code can be found [here](src.zip)
 
 ```bash
-wget https://jennyjams.net/
+wget https://jennyjams.net/copygc/src.zip
 ```
 
 ## Copying collectors
