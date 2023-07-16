@@ -417,10 +417,9 @@ void processWorklist(VM* vm) {
 }
 ```
 
-
 ## Tying the garbage bag together
 
-Finally, we change the `gc()` function so that we can.
+Finally, we change the `gc()` function so that we now call into our new mark and compact scheme.
 
 ```c,hl_lines=5-9
 void gc(VM* vm) {
@@ -457,7 +456,7 @@ We also have a _much_ simpler allocator than your systems `malloc()`/`free()`, b
 
 A mark and sweep collector needs to traverse the entire object graphs while cleaning up objects. In contrast, the copy-collector only needs to work for each of the roots, and each of the objects that has been moved into the to-heap. If we have a very large number of dead objects and a very small number of live objects, this can be a massive gain on the mark and sweep implementation.
 
-## Pro: Reduces fragmentation
+### Pro: Reduces fragmentation
 
 A mark and sweep garbage collector using `malloc()` (or any other allocator that deals with variably-sized data) has to content with _fragmentation_ -- after long cycles of freeing and releasing memory, it's possible that we might have enough memory to allocate it, but we don't have contiguous chunks of memory that it could fit. When copying collectors move objects, they push them all to one side of the heap, meaning we now have a large contiguous area to allocate new memory from, and there's no awkwardly sized gaps. 
 
