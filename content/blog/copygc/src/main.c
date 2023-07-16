@@ -40,8 +40,8 @@ typedef enum {
 } Region;
 
 typedef struct {
-  size_t bump_offset;
   Region region;
+  size_t bump_offset;
   unsigned char region_boba[HEAP_MAX];
   unsigned char region_kiki[HEAP_MAX];
 } Heap;
@@ -77,7 +77,7 @@ bool inFromHeap(Heap* heap, void* ptr) {
 
 static void* heapAlloc(Heap* vm, size_t size);
 
-void assert(int condition, const char* message) {
+void assertPrint(int condition, const char* message) {
   if (!condition) {
     printf("%s\n", message);
     raise(SIGTRAP);
@@ -108,19 +108,19 @@ VM* newVM() {
 
 
 void push(VM* vm, Object* value) {
-  assert(vm->stackSize < STACK_MAX, "Stack overflow!");
+  assertPrint(vm->stackSize < STACK_MAX, "Stack overflow!");
   vm->stack[vm->stackSize++] = value;
 }
 
 
 Object* pop(VM* vm) {
-  assert(vm->stackSize > 0, "Stack underflow!");
+  assertPrint(vm->stackSize > 0, "Stack underflow!");
   return vm->stack[--vm->stackSize];
 }
 
 /// @brief Performs the copying/forwarding and if not forwarded, adds the item to worklist.
 Object* forward(VM* vm, Object* object) {
-  assert(inFromHeap(vm->heap, object), "Object must be in from-heap.");
+  assertPrint(inFromHeap(vm->heap, object), "Object must be in from-heap.");
   
   if (object->type == OBJ_FRWD) return object->forward;
 
@@ -146,11 +146,9 @@ void processWorklist(VM* vm) {
   while (vm->firstObject != vm->lastObject) {
     //forward sub-pointers of Pair object
     if (vm->firstObject->type == OBJ_PAIR) {
-      if (inFromHeap(vm->heap, vm->firstObject->head))
-        vm->firstObject->head = forward(vm, vm->firstObject->head);
+      vm->firstObject->head = forward(vm, vm->firstObject->head);
       
-      if (inFromHeap(vm->heap, vm->firstObject->tail))
-        vm->firstObject->tail = forward(vm, vm->firstObject->tail);
+      vm->firstObject->tail = forward(vm, vm->firstObject->tail);
     }
 
     vm->firstObject++;
@@ -188,13 +186,13 @@ void gc(VM* vm) {
 void* align_up(void* ptr) {
   uintptr_t value = (uintptr_t) ptr;
   value = (value + (DEFAULT_ALIGN-1)) & -DEFAULT_ALIGN;
-  assert(value % DEFAULT_ALIGN == 0, "Pointer must be aligned to DEFAULT_ALIGN");
+  assertPrint(value % DEFAULT_ALIGN == 0, "Pointer must be aligned to DEFAULT_ALIGN");
   return (void*) value;
 }
 
 
 void* heapAlloc(Heap* heap, size_t size) {
-  assert(heap->bump_offset + size < HEAP_MAX, "Attempted to allocate more items that can be in heap");
+  assertPrint(heap->bump_offset + size < HEAP_MAX, "Attempted to allocate more items that can be in heap");
   void* pointer = NULL;
 
   if (heap->region == RGN_BOBA) {
@@ -248,7 +246,7 @@ void objectPrint(Object* object) {
       break;
     
     default:
-      assert(0, "You shouldn't be seeing this!\n");
+      assertPrint(0, "You shouldn't be seeing this!\n");
       break;
   }
 }
@@ -267,7 +265,7 @@ void test1() {
   pushInt(vm, 2);
 
   gc(vm);
-  assert(vm->numObjects == 2, "Should have preserved objects.");
+  assertPrint(vm->numObjects == 2, "Should have preserved objects.");
   freeVM(vm);
 }
 
@@ -280,7 +278,7 @@ void test2() {
   pop(vm);
 
   gc(vm);
-  assert(vm->numObjects == 0, "Should have collected objects.");
+  assertPrint(vm->numObjects == 0, "Should have collected objects.");
   freeVM(vm);
 }
 
@@ -296,7 +294,7 @@ void test3() {
   pushPair(vm);
 
   gc(vm);
-  assert(vm->numObjects == 7, "Should have reached objects.");
+  assertPrint(vm->numObjects == 7, "Should have reached objects.");
   freeVM(vm);
 }
 
@@ -315,7 +313,7 @@ void test4() {
   b->tail = a;
 
   gc(vm);
-  assert(vm->numObjects == 4, "Should have collected objects.");
+  assertPrint(vm->numObjects == 4, "Should have collected objects.");
   freeVM(vm);
 }
 

@@ -10,13 +10,23 @@ This blog post is meant to an iteration on the tutorial and introduction to garb
 
 I thought this would be cool because the original code already has a tiny but functional mutator and a set of tests meant to stress it; this means we can compare both the performance and implementation of the copying collector as well as the normal collector.
 
+## Source code for this article
+
+The source code can be found [here](copygc/main.c)
+
+```bash
+wget https://jennyjams.net/
+```
+
 ## Copying collectors
 
-A _copying collector_ is a garbage collector design that ties itself intimately in with the backing allocation system: you have two logical (and here, physical) memory regions. One of these is set to be _active_ region, and all new memory is allocated from this region. When the garbage collection subsystem determines that enough memory has been used that garbage needs to be collected, then the active region is swapped to inactive and vice-versa, then the garbage collector determines the set of live objects and _evacuates_ these objects from the now-inactive region to the newly active region. Then, any pointers inside these objects are checked to see if they point to the old region -- if they do, it is checked if an object has been already brought over, and if not, it itself copied over and analyzed.
+A _copying collector_ is a garbage collector design that ties itself intimately in with the backing allocation system: you have two logical (and here, physical) memory regions. One of these is set to be _active_ region, and all new memory is allocated from this region. When the garbage collection subsystem determines that enough memory has been used that garbage needs to be collected, then the active region is swapped to inactive and vice-versa, then the garbage collector determines the set of live objects and _evacuates_ these objects from the now-inactive region to the newly active region. Then, we take any pointers in the now moved object, and check if the pointers they pointed to in the old region have already forwarded. If so, use the forwarded pointer, if not, perform evacuation.
 
 If an object has already been moved, then the object in the inactive-region can be reused to contain a pointer pointing to it's evacuated counterpart; this helps preserve the topology of the object graph.
 
 ## Cheney's algorithm
+
+The particular algorithm used here is [Cheney's Algorithm](https://dl.acm.org/doi/10.1145/362790.362798), and it comes to us from the venerable 1970s.
 
 1. Swap the active heap
 2. Walk the set of roots, and evacuate the pointer to the new heap.
@@ -48,6 +58,7 @@ def evacuate(ptr):
 
 ```
 
+However, I feel like a lot of GC stuff can feel extremely abstract, especially when you start dealing with the quasi-recursive stuff, so I'm laying it out in pictures instead.
 
 ## Cheney's Algorithm, this time in pictures.
 
@@ -177,23 +188,8 @@ typedef struct {
   /* The number of objects required to trigger a GC. */
   int maxObjects;
 
-  /* Pointer to a Heap object*/
-  Heap* heap;
+
 } VM;
-```
-
-We also update how we allocate objects to remove the code for the intrusive linked list:
-
-```c
-Object* newObject(VM* vm, ObjectType type) {
-  if (vm->numObjects == vm->maxObjects) gc(vm);
-
-  Object* object = heapAlloc(vm->heap, sizeof(Object));
-  object->type = type;
-  vm->numObjects++;
-
-  return object;
-}
 ```
 
 ## The world's smallest allocator, twice
@@ -231,6 +227,8 @@ Heap* newHeap() {
 }
 ```
 
+It seem a little strange that, after writing a custom allocator, we would just ``malloc()`` to get the memory for the allocator, but this is pretty common -- unless you are yourself implementing `malloc()` or the lowest-level memory allocator for a system, normally you have to rely on _some_ function call to get you backing memory. And `malloc()` is conveniently right here!
+
 Next, allocation!
 
 ```c
@@ -266,8 +264,23 @@ void swapHeap(VM* vm) {
 }
 ```
 
-Finally, we want to update our VM object to contain a Heap pointer, and to free it when cleaning up our VM.
+Also, since we're no longer using `malloc()` to allocate objects, we have to update our `newObject()` function.
 
+We also update how we allocate objects to remove the code for the intrusive 
+
+```c
+Object* newObject(VM* vm, ObjectType type) {
+  if (vm->numObjects == vm->maxObjects) gc(vm);
+
+  Object* object = heapAlloc(vm->heap, sizeof(Object));
+  object->type = type;
+  vm->numObjects++;
+
+  return object;
+}
+```
+
+Finally, we want to update our VM object to contain a Heap pointer. We also add the `lastObject` pointer field that we use during the collection step.
 
 ```c
 VM* newVM() {
@@ -281,6 +294,8 @@ VM* newVM() {
   return vm;
 }
 ```
+
+Finally, as good responsible C citizens we free the heap object we've malloced when we free it's own VM. 
 
 ```c
 void freeVM(VM *vm) {
@@ -305,10 +320,25 @@ void processRoots(VM* vm) {
 }
 ```
 
-Forwarding is pretty simple
+When we forward an object, we first check to see if it has already been forwarded.
+
+If it has, we just return the forwarded pointer, which we know is in the to-heap.
+
+If
 
 ```c
-/// @brief Performs the copying/forwarding and if not forwarded, adds the item to worklist.
+Object* forward(VM* vm, Object* object) {
+  assert(inFromHeap(vm->heap, object), "Object must be in from-heap.");
+  
+  if (object->type == OBJ_FRWD) return object->forward;
+  //...
+}
+```
+
+If it hasn't, then we allocate a new object in the to-heap, copy the contents of object in the from-heap over.
+We then update the `vm->lastObject` field to point one past the currently allocated object. This is one of the times in this codebase where i'm taking advantage of the fact all objects have the same overall size; if they were of a different size it would look more like `vm->lastObject  = (Object*) ((char*)copied + getObjectSize(copied)`.
+
+```c
 Object* forward(VM* vm, Object* object) {
   assert(inFromHeap(vm->heap, object), "Object must be in from-heap.");
   
@@ -317,12 +347,106 @@ Object* forward(VM* vm, Object* object) {
   Object* copied = heapAlloc(vm->heap, sizeof(Object));
   vm->numObjects++;
   memcpy(copied, object, sizeof(Object));
-  // thread copied object into worklist
 
-  //set forwarding pointer
-  object->type = OBJ_FRWD;
-  object->forward = copied;
   vm->lastObject = copied + 1;
   return copied;
 }
 ```
+
+Finally, we set our old object to hold a forwarding pointer:
+
+```c
+Object* forward(VM* vm, Object* object) {
+  assert(inFromHeap(vm->heap, object), "Object must be in from-heap.");
+  
+  if (object->type == OBJ_FRWD) return object->forward;
+
+  Object* copied = heapAlloc(vm->heap, sizeof(Object));
+  vm->numObjects++;
+  memcpy(copied, object, sizeof(Object));
+
+  vm->lastObject = copied + 1;
+  
+  //set forwarding pointer
+  object->type = OBJ_FRWD;
+  object->forward = copied;
+ 
+  return copied;
+}
+```
+
+## To all of the indirectly traversable objects that I've left behind
+
+Now that we've built the mechanism to forward our pointers, all managed objects pointed to by the roots have been handled. Next, we have to handle the objects that those moved objects still point to.
+
+In the original mark-sweep scheme, reachability had been solved before any memory management had occured -- we recursively walk the object graph, bail if an object has already been marked to prevent loops, and then walk the linked list to purge all of the unmarked objects.
+
+Here, the reachability and marking works intermingled: we iterate through each of the objects in the new heap, and when we see it has a field pointing into the from-heap, we moved it and stick it onto the end of our heap, meaning, and once we get to scanning it we fix up any of it's pointers, until we hit the end.
+cls
+Taking advantage that all objects in our VM are the same size, we can just increment a pointer. If we didn't, we'd need to do work to increment via actual current size.
+
+```c
+void processWorklist(VM* vm) {
+  while (vm->firstObject != vm->lastObject) {
+    //forward sub-pointers of Pair object
+    if (vm->firstObject->type == OBJ_PAIR) {
+      vm->firstObject->head = forward(vm, vm->firstObject->head);
+      
+      vm->firstObject->tail = forward(vm, vm->firstObject->tail);
+    }
+
+    vm->firstObject++;
+  }
+}
+```
+
+
+## Tying the garbage bag together
+
+Finally, we change the `gc()` function so that we can.
+
+```c
+void gc(VM* vm) {
+  int numObjects = vm->numObjects;
+  vm->numObjects = 0;
+
+  swapHeap(vm);
+  processRoots(vm);
+  processWorklist(vm);
+  vm->lastObject = NULL;
+  vm->firstObject = NULL;
+
+  vm->maxObjects = vm->numObjects == 0 ? INIT_OBJ_NUM_MAX : vm->numObjects * 2;
+
+  printf("Collected %d objects, %d remaining.\n", numObjects - vm->numObjects,
+         vm->numObjects);
+}
+```
+
+
+## Pros and Cons of a copy-collector
+
+### Pro: Removed object list overhead.
+
+Directly, we've removed the overhead of an additional pointer that the VM only uses during garbage collection, which does save us 8 bytes per object, and that sort of cost per-item can turn out to be quite large.
+
+But in addition to that, we've also removed a temporal overhead in addition to a spatial overhead -- we no longer traversing a linked list, and that can be a huge change due to [Cache coherency](https://en.wikipedia.org/wiki/Cache_coherence). Because we're only ever stepping over an array, we won't clear the cache out, and we (potentially) might have no more issues with blowing out our memory cache and repopulating it.
+
+We also have a _much_ simpler allocator than your systems `malloc()`/`free()`, but we do so at the cost of that systems flexibility, as giving up any effects of hardening against possible exploitation or preventing data races. That isn't a big deal with our tiny mutator in a system that'll never go into production, but is something worth considering for more serious projects.
+
+### Pro: Active work depends on the number of live objects
+
+A mark and sweep collector needs to traverse the entire object graphs while cleaning up objects. In contrast, the copy-collector only needs to work for each of the roots, and each of the objects that has been moved into the to-heap. If we have a very large number of dead objects and a very small number of live objects, this can be a massive gain on the mark and sweep implementation.
+
+### Con: Halves the effective free space
+
+All of this talk about the utility and benifets we get from cache coherency is nice and all, but we're also overlooking a bit of a big one:
+
+We are only ever using half of our allocation space. The rest of it is always just sitting there, without anything to do, just dead.
+
+### Con: We can't do extra work per deleted object?
+
+Also a bit of a weird one, but one of the biggest benefits of bump allocators is also a weakness -- we blow away all of our unused memory with one simple command. This is perfect for the small mutator we work with, but if we were using C++ and those objects had non-trivial destructors, or we were implementing a language with [finalizers](https://en.wikipedia.org/wiki/Finalizer), then we lose access to all of those objects that might need to have additional code run, and we'd need to add some sort of mechanism to find and walk through all of the objects that need to be destroyed.
+
+## Go forth and copy
+
