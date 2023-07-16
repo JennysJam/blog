@@ -12,7 +12,9 @@ I thought this would be cool because the original code already has a tiny but fu
 
 ## Source code for this article
 
-The source code can be found [here](src.zip)
+The source code can be found at [This github repo](https://github.com/JennysJam/copygc).
+
+It is also hosted locally on this site, and you can download it as well with:\
 
 ```bash
 wget https://jennyjams.net/copygc/src.zip
