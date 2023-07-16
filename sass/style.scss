@@ -72,6 +72,12 @@ hr {
     border-right: 0px;
 }
 
+mark {
+    display:block;
+    background-color: #ffebcd;
+    width: 100%;
+}
+
 pre {
     border-radius: 1rem;
     border-width: 5px;
@@ -102,6 +108,7 @@ section.sectiondiv > p {
 }
 
 code {
+    font-weight: bold;
     background-color: $code-color;
     border-radius: 1rem;
     padding: 0.1rem 0.5rem;
@@ -112,6 +119,7 @@ pre,pre>code {
     color: $dark-blue;
     font-size: 1rem;
     line-height: 1.3rem;
+    font-weight: normal;
 }
 
 .z-keyword, .z-type, .z-storage {

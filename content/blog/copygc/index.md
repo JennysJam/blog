@@ -14,7 +14,7 @@ I thought this would be cool because the original code already has a tiny but fu
 
 The source code can be found at [This github repo](https://github.com/JennysJam/copygc).
 
-It is also hosted locally on this site, and you can download it as well with:\
+The code is also hosted locally on this site, and you can download it as well with:
 
 ```bash
 wget https://jennyjams.net/copygc/src.zip
@@ -34,7 +34,7 @@ The particular algorithm used here is [Cheney's Algorithm](https://dl.acm.org/do
 2. Walk the set of roots, and evacuate the pointer to the new heap.
 3. After evacuating all of the objects, start walking through all of the newly allocated objects and inspecting each of their fields. If the field is a pointer and points into the old region, check if it has a forwarding address. If it does, set the field to the forwarding address. If not evacuate it.
 
-Or, in psuedo code terms:
+Or, in pseudocode terms:
 
 ```py
 
@@ -123,7 +123,7 @@ The simplest possible allocator is a _bump_ allocator: just a large contiguous r
 
 This allocator doesn't really have a coherent `free()` operation -- even if you logically free memory earlier on in the allocator, the allocator itself can't reuse it. Thus, the only meaningful way to reset memory is to wipe _all_ allocations and reset the `offset` to 0.
 
-This property makes this allocator-pattern genuinely useful for situations like webservers or videogames, where a request or individual frame might generate large amounts of data that is not meaningful useful to keep around afterwards; the `clear()` operation would be much faster than attempting to deallocate each of the objects.
+This property makes this allocator-pattern genuinely useful for situations like web-servers or video games, where a request or individual frame might generate large amounts of data that is not meaningful useful to keep around afterwards; the `clear()` operation would be much faster than attempting to deallocate each of the objects.
 
 ![](./img/bump-1.svg)
 
@@ -149,13 +149,19 @@ Next, we call `clear()` and reset the offset to point to the start of the memory
 
 Next, we allocate memory again, and we begin allocating from the beginning of the memory chunk.
 
+## Now, to the code
+
+Next, I present the code for each of the major parts we change out, and attempt to highlight code where I'm rewriting old code.
+
 ## Fixin' up our unified object model
 
 Since we're updating an existing codebase to swap the GC strategy out, we need to perform some code to change things.
 
-First, we update the object model for our VM to remove the intrusive link list pointer, and to add another case to our union for the forwarding pointer. This is one of the canonical benefits of copying over more traditional mark-sweep, mark-compact, and reference-counting schemes: we don't need any extra metadata inside of the header.
+First, we update the object model for our VM to remove the intrusive link list pointer, and to add another case to our union for the forwarding pointer. This is one of the canonical benefits of copying over more traditional mark-sweep, mark-compact, and reference-counting schemes: we don't need any extra metadata inside of the header. 
 
-```c
+However, we do need to utilize a forwarding pointer. You'd think that might mean we'd need the overhead of another pointer, but since an object being repurposes to point to a new object has no other meaningful significance, we can just reuse the space for one of it's fields
+
+```c,hl_lines=3 13
 typedef struct sObject {
   ObjectType type;
   // remove ``struct sObject* next;``
@@ -172,10 +178,20 @@ typedef struct sObject {
   };
 } Object;
 ```
+We also need a new tag to indicate an object is forwarded.
 
-Next, we update the VM model to store the code for the begining and end of the heap work-list
+```c,hl_lines=4
+typedef enum {
+  OBJ_INT,
+  OBJ_PAIR,
+  OBJ_FRWD
+} ObjectType;
 
-```c
+```
+
+Next, we update the VM model to store the code for the beginning and end of the heap work-list
+
+```c,hl_lines=7
 typedef struct {
   Object* stack[STACK_MAX];
   int stackSize;
@@ -189,7 +205,6 @@ typedef struct {
 
   /* The number of objects required to trigger a GC. */
   int maxObjects;
-
 
 } VM;
 ```
@@ -215,7 +230,7 @@ typedef struct {
 } Heap;
 ```
 
-First, we need some code to generate a new Heap object. We memset the memory to zero to ensure no previous data remains.
+First, we need some code to generate a new Heap object. We `memset()` the memory to zero to ensure no previous data remains.
 
 ```c
 // Allocates and creates new Heap
@@ -270,7 +285,7 @@ Also, since we're no longer using `malloc()` to allocate objects, we have to upd
 
 We also update how we allocate objects to remove the code for the intrusive 
 
-```c
+```c,hl_lines=4 6
 Object* newObject(VM* vm, ObjectType type) {
   if (vm->numObjects == vm->maxObjects) gc(vm);
 
@@ -284,7 +299,7 @@ Object* newObject(VM* vm, ObjectType type) {
 
 Finally, we want to update our VM object to contain a Heap pointer. We also add the `lastObject` pointer field that we use during the collection step.
 
-```c
+```c,hl_lines=5 8
 VM* newVM() {
   VM* vm = malloc(sizeof(VM));
   vm->stackSize = 0;
@@ -297,9 +312,9 @@ VM* newVM() {
 }
 ```
 
-Finally, as good responsible C citizens we free the heap object we've malloced when we free it's own VM. 
+Finally, as good responsible C citizens we free the heap object we've `malloc()`'d when we free it's own VM. 
 
-```c
+```c,hl_lines=4
 void freeVM(VM *vm) {
   vm->stackSize = 0;
   gc(vm);
@@ -381,7 +396,7 @@ Object* forward(VM* vm, Object* object) {
 
 Now that we've built the mechanism to forward our pointers, all managed objects pointed to by the roots have been handled. Next, we have to handle the objects that those moved objects still point to.
 
-In the original mark-sweep scheme, reachability had been solved before any memory management had occured -- we recursively walk the object graph, bail if an object has already been marked to prevent loops, and then walk the linked list to purge all of the unmarked objects.
+In the original mark-sweep scheme, reachability had been solved before any memory management had occurred -- we recursively walk the object graph, bail if an object has already been marked to prevent loops, and then walk the linked list to purge all of the unmarked objects.
 
 Here, the reachability and marking works intermingled: we iterate through each of the objects in the new heap, and when we see it has a field pointing into the from-heap, we moved it and stick it onto the end of our heap, meaning, and once we get to scanning it we fix up any of it's pointers, until we hit the end.
 cls
@@ -407,7 +422,7 @@ void processWorklist(VM* vm) {
 
 Finally, we change the `gc()` function so that we can.
 
-```c
+```c,hl_lines=5-9
 void gc(VM* vm) {
   int numObjects = vm->numObjects;
   vm->numObjects = 0;
@@ -428,6 +443,8 @@ void gc(VM* vm) {
 
 ## Pros and Cons of a copy-collector
 
+So, now we have a copying collector. What did we gain, and what will we tearfully grieve?
+
 ### Pro: Removed object list overhead.
 
 Directly, we've removed the overhead of an additional pointer that the VM only uses during garbage collection, which does save us 8 bytes per object, and that sort of cost per-item can turn out to be quite large.
@@ -440,15 +457,25 @@ We also have a _much_ simpler allocator than your systems `malloc()`/`free()`, b
 
 A mark and sweep collector needs to traverse the entire object graphs while cleaning up objects. In contrast, the copy-collector only needs to work for each of the roots, and each of the objects that has been moved into the to-heap. If we have a very large number of dead objects and a very small number of live objects, this can be a massive gain on the mark and sweep implementation.
 
+## Pro: Reduces fragmentation
+
+A mark and sweep garbage collector using `malloc()` (or any other allocator that deals with variably-sized data) has to content with _fragmentation_ -- after long cycles of freeing and releasing memory, it's possible that we might have enough memory to allocate it, but we don't have contiguous chunks of memory that it could fit. When copying collectors move objects, they push them all to one side of the heap, meaning we now have a large contiguous area to allocate new memory from, and there's no awkwardly sized gaps. 
+
+While a more complex and production ready copy-collector may uses an allocator more complicated and flexible than our tiny little bump allocator, pretty much any schema benefits from the ability to compact used memory together so there is more contiguous usable memory. 
+
 ### Con: Halves the effective free space
 
-All of this talk about the utility and benifets we get from cache coherency is nice and all, but we're also overlooking a bit of a big one:
+All of this talk about the utility and benefits we get from cache coherency is nice and all, but we're also overlooking a bit of a big one:
 
-We are only ever using half of our allocation space. The rest of it is always just sitting there, without anything to do, just dead.
+We are only ever using half of our allocation space. The rest of it is always just sitting there, without anything to do, just dead. That's kind of a scary amount of stuff to give up -- normally when we think of overhead or potentially unusable space, it's small little chunks that add up, not a huge compromise outright. 
 
 ### Con: We can't do extra work per deleted object?
 
 Also a bit of a weird one, but one of the biggest benefits of bump allocators is also a weakness -- we blow away all of our unused memory with one simple command. This is perfect for the small mutator we work with, but if we were using C++ and those objects had non-trivial destructors, or we were implementing a language with [finalizers](https://en.wikipedia.org/wiki/Finalizer), then we lose access to all of those objects that might need to have additional code run, and we'd need to add some sort of mechanism to find and walk through all of the objects that need to be destroyed.
 
-## Go forth and copy
+## Go forward and copy
+
+And, well, that's a copying collector! Much like the original, this is a pretty trivial project and implementing this in production will probably run into huge number of bottlenecks and potential issues, but it's certainly not an unusable toy either -- this _was_ cutting edge research at one point! And versions of it are used in production, like in [the android runtime(Video link)](https://youtu.be/1uLzSXWWfDg?t=818).
+
+And also, I think this is doing some nice work describing a useful piece of low-level tech that certainly has explainers online and in textbooks, but not any as in-depth as either Nystrom's original post, nor with as nice pictures.
 
