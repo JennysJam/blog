@@ -4,7 +4,7 @@ description = "Introduction to copying collectors"
 date = 2023-07-10
 +++
 
-# Baby's 2nd garbage collector. 
+# Baby's second garbage collector. 
 
 This blog post is meant to an iteration on the tutorial and introduction to garbage collection implementation presented in [this classic blog post](https://journal.stuffwithstuff.com/2013/12/08/babys-first-garbage-collector/). We are still working with simple garbage collectors, but this time another one with a bit more complexity.
 
@@ -22,9 +22,12 @@ wget https://jennyjams.net/copygc/src.zip
 
 ## Copying collectors
 
-A _copying collector_ is a garbage collector design that ties itself intimately in with the backing allocation system: you have two logical (and here, physical) memory regions. One of these is set to be _active_ region, and all new memory is allocated from this region. When the garbage collection subsystem determines that enough memory has been used that garbage needs to be collected, then the active region is swapped to inactive and vice-versa, then the garbage collector determines the set of live objects and _evacuates_ these objects from the now-inactive region to the newly active region. Then, we take any pointers in the now moved object, and check if the pointers they pointed to in the old region have already forwarded. If so, use the forwarded pointer, if not, perform evacuation.
+A _copying collector_ is a garbage collector design that ties itself intimately in with the backing allocation system: you have two logical (and here, physical) memory regions. One of these is set to be _active_ region, and all new memory is allocated from this region. 
 
-If an object has already been moved, then the object in the inactive-region can be reused to contain a pointer pointing to it's evacuated counterpart; this helps preserve the topology of the object graph.
+When the garbage collection subsystem determines that enough memory has been used that garbage needs to be collected, then the active region is swapped to inactive and vice-versa, then the garbage collector determines the set of live objects and _evacuates_ these objects from the now-inactive region to the newly active region. Then, we take any pointers in the now moved object, and check if the pointers they pointed to in the old region have already forwarded. If so, use the forwarded pointer, if not, perform evacuation.
+
+If an object has already been moved, then the object in the inactive-region can be reused to contain a pointer pointing to it's evacuated counterpart; this helps preserve the topology of the object graph and fix all of the reference cycles code tends to create.
+
 
 ## Cheney's algorithm
 
@@ -117,7 +120,9 @@ Garbage collection is now Complete.
 
 ## The world smallest allocator
 
-Unlike mark and sweep, a copying collector relies on it's allocator to free memory, and thus we cannot use the standard library `malloc()` and `free()` function. Thus, we will need an allocator!
+Unlike mark and sweep, a copying collector relies on it's allocator to free memory, and thus we cannot use the standard library `malloc()` and `free()` function -- instead of calling a function to free memory on every object we've determined to be non-live, we implicitly free it when we swap the heap because all of the data in our allocator gets reused for future allocation. 
+
+Thus, we will need an allocator!
 
 The simplest possible allocator is a _bump_ allocator: just a large contiguous region of memory, and an offset. Whenever an `allocate(size)` call is perform, it returns a pointer to the memory that is `offset` bytes into the memory region. The offset is then incremented by this size.
 
@@ -213,7 +218,7 @@ typedef struct {
 
 In our case, we actually need 2 bump-allocators. Because only one one is every being allocated from, we can keep around a single offset, and also keep an extra bit of state describing which pool is being used. The boring names would be Region 1 and 2, or Regions A and B; I want to be cute and name them Regions [Boba and Kiki instead](https://en.wikipedia.org/wiki/Bouba/kiki_effect) instead. Because I cannot spell and cannot be asked to double check things, all of the code uses Boba instead of Bouba. Consider this your daily reminder to go buy Boba.
 
-First, we need a reasonable max size -- I simply choose 2 * 16:
+First, we need a reasonable max size -- I simply choose 2^16:
 
 ```c
 #define HEAP_MAX 65536
@@ -283,7 +288,7 @@ void swapHeap(VM* vm) {
 
 Also, since we're no longer using `malloc()` to allocate objects, we have to update our `newObject()` function.
 
-We also update how we allocate objects to remove the code for the intrusive 
+We also update how we allocate objects to remove the code from the intrusive linked list.
 
 ```c,hl_lines=4 6
 Object* newObject(VM* vm, ObjectType type) {
@@ -325,7 +330,7 @@ void freeVM(VM *vm) {
 
 ## No more marking, only forwarding.
 
-Since we neither engage in marking nor sweeping, we can rip out almost all code related to mark and sweep code (which would no longer compile correctly anyone because we updated our VM and Object types).
+Since we neither engage in marking nor sweeping, we can rip out almost all code related to mark and sweep code (which would no longer compile correctly anymore because we updated our VM and Object types).
 
 We need to first handle all of our roots. To do this, we simply walk over each of the root, and perform evacuation and forwarding on each of the pointed to objects:
 
@@ -340,8 +345,6 @@ void processRoots(VM* vm) {
 When we forward an object, we first check to see if it has already been forwarded.
 
 If it has, we just return the forwarded pointer, which we know is in the to-heap.
-
-If
 
 ```c
 Object* forward(VM* vm, Object* object) {
@@ -399,8 +402,8 @@ Now that we've built the mechanism to forward our pointers, all managed objects 
 In the original mark-sweep scheme, reachability had been solved before any memory management had occurred -- we recursively walk the object graph, bail if an object has already been marked to prevent loops, and then walk the linked list to purge all of the unmarked objects.
 
 Here, the reachability and marking works intermingled: we iterate through each of the objects in the new heap, and when we see it has a field pointing into the from-heap, we moved it and stick it onto the end of our heap, meaning, and once we get to scanning it we fix up any of it's pointers, until we hit the end.
-cls
-Taking advantage that all objects in our VM are the same size, we can just increment a pointer. If we didn't, we'd need to do work to increment via actual current size.
+
+Taking advantage that all objects in our VM are the same size, we can just increment a pointer. If we didn't, we'd need to do work to increment via the object's size.
 
 ```c
 void processWorklist(VM* vm) {
@@ -460,7 +463,6 @@ A mark and sweep collector needs to traverse the entire object graphs while clea
 
 A mark and sweep garbage collector using `malloc()` (or any other allocator that deals with variably-sized data) has to content with _fragmentation_ -- after long cycles of freeing and releasing memory, it's possible that we might have enough memory to allocate it, but we don't have contiguous chunks of memory that it could fit. When copying collectors move objects, they push them all to one side of the heap, meaning we now have a large contiguous area to allocate new memory from, and there's no awkwardly sized gaps. 
 
-While a more complex and production ready copy-collector may uses an allocator more complicated and flexible than our tiny little bump allocator, pretty much any schema benefits from the ability to compact used memory together so there is more contiguous usable memory. 
 
 ### Con: Halves the effective free space
 
@@ -471,6 +473,10 @@ We are only ever using half of our allocation space. The rest of it is always ju
 ### Con: We can't do extra work per deleted object?
 
 Also a bit of a weird one, but one of the biggest benefits of bump allocators is also a weakness -- we blow away all of our unused memory with one simple command. This is perfect for the small mutator we work with, but if we were using C++ and those objects had non-trivial destructors, or we were implementing a language with [finalizers](https://en.wikipedia.org/wiki/Finalizer), then we lose access to all of those objects that might need to have additional code run, and we'd need to add some sort of mechanism to find and walk through all of the objects that need to be destroyed.
+
+### Con: pointers to objects aren't stable and we need to patch up root objects.
+
+Many programming languages need to offer an ability for code that isn't handled as part of the garbage collection system, like [C extensions in CPython](https://docs.python.org/3/extending/extending.html). In Mark and Sweep schemes (or in CPython's case, a hybrid reference-counting/sweep scheme), pointers to objects handled by the garbage collector are stable until their free'd, so you can extend your system to tell the GC that these objects should be treated as roots themselves and not be de-allocated until their marked as no-longer a root. But in a system that moves the object, we need to update any pointer to the old object to it's evacuated counterpart, and this can significantly complicate the language API.
 
 ## Go forward and copy
 
