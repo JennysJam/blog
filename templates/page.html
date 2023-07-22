@@ -3,6 +3,18 @@
   {{page.title}}
 {% endblock title%}
 
+{% block header %}
+  <ul class="jj-path">
+    {% set pathtmp = "@/" %}
+    <li><a href="/">jennyjams</a></li>
+    {% for fragment in page.components %}
+    {% set pathtmp = pathtmp + fragment %}
+    <li> {{ fragment }} </li>
+    {% endfor %}
+  </ul>
+{% endblock header %}
+
+
 {% block content %}
     {{page.content | safe }}
 {% endblock content %}

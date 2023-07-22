@@ -43,12 +43,19 @@ img {
 
 body {
     background-color: $body-color;
-    min-width: 70%;
+    min-width: 50%;
     width: 600px;
-    max-width: 80%;
-
+    max-width: 100%;
     margin: 0 auto;
-    margin-top: 1rem;
+
+    // Full width for screens under 800px wide, and limit to 800px width for
+    // larger screens
+    max-width: 100%;
+    @media (min-width: 800px) {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
     padding: 1rem;
     
     border-radius: 1rem;
