@@ -4,14 +4,14 @@
 {% endblock title%}
 
 {% block header %}
-  <ul class="jj-path">
-    {% set pathtmp = "@/" %}
-    <li><a href="/">jennyjams</a></li>
-    {% for fragment in page.components %}
-    {% set pathtmp = pathtmp + fragment %}
-    <li> {{ fragment }} </li>
+  <nav>
+  <ul class="nav-path">
+    {% for ancestor_path in page.ancestors %}
+    {% set ancestor = get_section(path=ancestor_path) %}
+    <li class="nav-item"><a href="{{ancestor.permalink}}">{{ancestor.title}}</a></li>
     {% endfor %}
   </ul>
+  </nav>
 {% endblock header %}
 
 

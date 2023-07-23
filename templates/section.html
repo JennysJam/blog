@@ -4,6 +4,17 @@
     {{section.title}}
 {% endblock title %}
 
+{% block header %}
+  <nav>
+  <ul class="nav-path">
+    {% for ancestor_path in section.ancestors %}
+    {% set ancestor = get_section(path=ancestor_path) %}
+    <li class="nav-item"><a href="{{ancestor.permalink}}">{{ancestor.title}}</a></li>
+    {% endfor %}
+  </ul>
+  </nav>
+{% endblock header %}
+
 {% block content %}
     {{section.content | safe}}
 
