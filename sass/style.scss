@@ -129,16 +129,15 @@ ul.nav-path {
     padding-left: 0;
 }
 
-li.nav-item {
+li.nav-item, li.nav-page {
     display: inline-block;
 }
 
-li.nav-item::before {
+li.nav-item::before,li.nav-page::before {
     content: '/';
     display: inline-block;
     padding: 0 3px;
 }
-
 
 
 
