@@ -7,14 +7,22 @@
 {% block header %}
   <nav>
   <ul class="nav-path">
-    {% for ancestor_path in section.ancestors %}
-    {% if loop.index == 1 %}
-        {% continue %}
+    {% if section.components | length == 0 %}
+        <li class="nav-item"></li>
+
+    {% else  %}
+        {% for ancestor_path in section.ancestors %}
+            {% if loop.first %}
+                {% continue %}
+            {% endif %}
+
+            {% set ancestor = get_section(path=ancestor_path) %}
+            <li class="nav-item"><a href="{{ancestor.permalink}}">{{ancestor.components | last }}</a></li>
+        {% endfor %}
+    
+        <li class="nav-section nav-item"><a href="{{section.permalink}}">{{section.components | last}}</a></li>
+    
     {% endif %}
-    {% set ancestor = get_section(path=ancestor_path) %}
-    <li class="nav-item"><a href="{{ancestor.permalink}}">{{ancestor.title}}</a></li>
-    {% endfor %}
-    <li class="nav-page"><a href="{{section .permalink}}">{{section.title}}</a></li>
   </ul>
   </nav>
 {% endblock header %}

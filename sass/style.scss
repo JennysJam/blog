@@ -133,13 +133,19 @@ li.nav-item, li.nav-page {
     display: inline-block;
 }
 
-li.nav-item::before,li.nav-page::before {
+li.nav-item::before {
     content: '/';
+    font-weight: bold;
     display: inline-block;
     padding: 0 3px;
 }
 
-
+li.nav-section::after {
+    content: '/';
+    font-weight: bold;
+    display:inline-block;
+    padding: 0 3px;
+}
 
 
 

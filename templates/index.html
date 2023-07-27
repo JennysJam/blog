@@ -4,6 +4,14 @@
 {{section.title}}
 {% endblock title%}
 
+{% block header%}
+<nav>
+    <ul class="nav-path">
+        <li class="nav-item"></li>
+    </ul>
+</nav>
+{% endblock header %}
+
 {% block content %}
     {{ section.content | safe }}
 
