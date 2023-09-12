@@ -6,7 +6,7 @@ date = 2023-09-11
 
 # Ashes Afterglow review
 
-[download link]()
+[download link](https://www.moddb.com/mods/ashes-2063)
 
 Rating: 4/5
 
