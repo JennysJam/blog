@@ -1,0 +1,23 @@
++++
+title = "Ashes: Afterglow"
+description = "Review of Ashes 2063"
+date = 2023-09-11
++++
+
+# Ashes Afterglow review
+
+[download link]()
+
+Rating: 4/5
+
+Ashes: Afterglow is a sequel to [Ashes: 2063](/reviews/ashes2063.html), and the pair form a strongly linked duology. Funnily enough for something I thought was being praised for something being praised for conforming (in it's own, GZDoom engine way) to modern high budget gaming expectations, the version of Ashes: 2063 I played was in fact a updated version that backported several gameplay additions from Afterglow. Unlike the original, Afterglow is a partially open world game, or maybe more so a spared down metroidvania of sorts, with the town levels acting as longer running quest hubs instead of quick small diversions from before. There is also now an upgrade system for weapons, something that was present in a bit more of a diergetic and understated way in the original, along with More : more weapons, more enemy types, larger maps, more complex quests and dialog states, ending slides, a racing level. 
+
+One thing that does truly set aside games using GzDoom from more modern games, to me, is the sheer scope of the levels -- these are huge, long, involved affairs in a way single player games might not lean into as much nowadays, and it all runs pretty reasonable on a slightly few years old laptop. The presence of the hub system and persistence also means that the areas connected by hubs (generally, the first act and the second act) almost act like one _huge_ level, unlocking shortcuts, progression, and a few sidequests.
+
+I find Ashes: Afterglow is a bit hard to talk about, because it's a stunningly impressive in talent, time and labour, and I do not like it's fundamental gameplay. I could not do anything on this scope, and it's as far as I know a work of love that has lasted years. It's slightly hard to guess how long playtimes are given their not quite correctly tracked, but I'd guess Afterglow was 15 hours for me and 2063 6 (there's an additional fan campaign distributed with them that'd I'd guess is 3 hours long). The game is strongly wed to making vast, visually impressive and varied levels, and it's doom style large numbers combat. I think the combat overstays it's welcome past a certain point, and opening the map to see that a level has 100+ enemies really killed a lot of the motivation for me. At around the 60% mark or so, I simply turned on immortality and stopped interacting with the combat past a certain point. I might have robbed myself of some of the interesting struggle, but I also felt like I'd more or less fully experienced the system, and mostly wanted to see the maps and plot.
+
+A kind of fun detail in the plot is your character, mostly self interested and to a certain extent just following the clues ancient tech points him to, sort of cleaves paths of destruction. This game has ending slides, which are a really nice detail, and they actually make engaging with one area in the second act lead to a bad ending for the town, which I thought was unusually thoughtful for the game. The second town also has a factional quest split, where you can either side with the upper elite or the lower class workers, or mostly go by default with the upper elite and not interfere much. The player character also develops a sort of violent reputation as a one man army of cruel destruction in the background but none of the NPCs repeating this refers to your character, and the PC can sort of awkwardly cough and go along with it and mostly keep his head down. This obliviousness nicely ties into how much the character changes while being overall ignorant of the larger conflicts beyond the extent he's been pulled into them.
+
+Both this and it's predecessor have always been solid about horror, and the haunted submarine level "Anomaly 110" and a section in the intermission levels do some incredible work with atmosphere, sound design and tension. 
+
+I hate leaving such a negative impression about the game, because I can only try and estimate how much sweat was poured into this, and seeing some stranger who has made very little telling them it sucks is awful. The maps are gorgeous and large, and there is plenty of content. If I was young or stuck in college without a budget, the sheer amount of content and scope these games have and the replayability of 2's quest choices would make them beloved goldmines. If you like doom style combat and don't mind the scope, I would extremely recommend these.
