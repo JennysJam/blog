@@ -3,6 +3,10 @@
 <head>
     {% block head %}
     <link rel="stylesheet" href="/style.css">
+    {% block rss %}
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ get_url(path="rss.xml", trailing_slash=false) }}">
+    {% endblock %}
+
     <title>
         {% block title %}
         Placeholder Title
@@ -12,12 +16,15 @@
 </head>
 
 <body>
+    <h1><a href="/">the jenny jam blog</a></h1>
     {% block content %}
     <p>Placeholder Content</p>
     {% endblock content %}
     <footer>
         {% block footer%}
         {% endblock footer%}
+        <hr>
+        <p>Built with <a href="https://www.getzola.org/">Zola.</a></p>
     </footer>
 </body>
 

@@ -49,6 +49,7 @@ body {
 
     margin: 0 auto;
     margin-top: 1rem;
+    margin-bottom: 3rem;
     padding: 1rem;
     
     border-radius: 1rem;
@@ -66,10 +67,11 @@ section > h3 {
 }
 
 hr {
-    background-color: goldenrod;
-    border-color:goldenrod;
-    border-left: 0px;
-    border-right: 0px;
+    background-color: #E8D7AE;
+    border-color: #E8D7AE;
+    //height: 1rem;
+    border: 0;
+    border-top: 3px #E8D7AE solid;
 }
 
 mark {

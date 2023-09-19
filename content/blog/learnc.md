@@ -47,7 +47,7 @@ The set of tools needed to build C are generally referred to as a _toolchain_, w
 
 GCC (standing for the _Gnu Compiler Collection_) is one of the most common and well known of the major compilers available to devs. It is available for free (and is one of the canonical examples of Free/Open Source software), and generally can be installed via your system package manager. One of the advantages of GCC is it's age: it's a long running complex project, and it also has a number of compiler backend targets you can utilize, as well as a pretty large space of added extensions and utilities. Generally, GCC is the compiler I default to using unless I have a specific reason to choose another, although Clang is equally as worthwhile and useful. 
 
-```shell
+```sh
 # install on Ubuntu
 > sudo apt install gcc
 ```
@@ -56,7 +56,7 @@ GCC (standing for the _Gnu Compiler Collection_) is one of the most common and w
 
 _Clang_ is the other major open source \*nix toolchains, and was developed in part to accept most of the extensions and compiler settings that GCC provides, meaning most software that uses GCC can probably be compiled with Clang. Clang and GCC are mostly compatible in terms of performance, so either are a fine choice unless you're relying on a particular backend or feature. It is also helpful to try and build software with both because it might pick up a number of errors the other might not. One thing Clang provides is that it is (by default, anyway) a cross compiler with the supported backends built in, whereas with GCC you will need to install a build of the compiler for that specific backend.
 
-```shell
+```sh
 # install on Ubuntu
 > sudo apt install clang
 ```
@@ -458,7 +458,7 @@ This is a bit more of a Linux construct, but probably one of the default ways ma
 
 For instance, if I want to use the cryptology library, then I can pull install `libopenssl` (and on most systems, the other necessary build items in `libopenssl-dev`) via the command line and begin developing my application.
 
-```shell
+```sh
 > sudo apt install openssl openssl-dev
 ```
 
