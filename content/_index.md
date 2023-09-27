@@ -1,6 +1,5 @@
 +++
 title="jenny jams blog"
-description = "No one knows your a dog with 2 degrees and an anxiety disorder on the internet"
 +++
 
 # Jenny Jam Blog
