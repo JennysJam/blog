@@ -32,37 +32,46 @@ html {
 
 a {
     color: #596771;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 img {
-    display:block;
+    display: block;
     margin: 0 auto;
     width: 30%;
 }
 
 body {
     background-color: $body-color;
-    min-width: 70%;
-    width: 600px;
-    max-width: 80%;
+
+    // Full width for screens under 800px wide, and limit to 800px width for
+    // larger screens
+    max-width: 100%;
+    width: 650px;
+
+    @media (min-width: 800px) {
+        max-width: 800px;
+    }
 
     margin: 0 auto;
     margin-top: 1rem;
     margin-bottom: 3rem;
     padding: 1rem;
-    
+
     border-radius: 1rem;
 }
 
+
 section {
-    margin-left: 0.5rem; /*Add extra to interior*/
+    margin-left: 0.5rem;
+    /*Add extra to interior*/
 }
-section > * {
+
+section>* {
     margin-left: 0.5rem;
 }
 
-section > h3 {
+section>h3 {
     margin-left: 0;
 }
 
@@ -75,7 +84,7 @@ hr {
 }
 
 mark {
-    display:block;
+    display: block;
     background-color: #ffebcd;
     width: 100%;
 }
@@ -104,7 +113,7 @@ section.sectiondiv {
     margin-bottom: 1.5rem;
 }
 
-section.sectiondiv > p {
+section.sectiondiv>p {
     margin: 0;
     margin-left: 1rem;
 }
@@ -116,7 +125,8 @@ code {
     //padding: 0.1rem 0.5rem;
 }
 
-pre,pre>code {
+pre,
+pre>code {
     background-color: $code-color;
     color: $dark-blue;
     font-size: 1rem;
@@ -125,27 +135,31 @@ pre,pre>code {
     overflow-x: auto;
 }
 
-.z-keyword, .z-type, .z-storage {
-    color:$dark-green;
+.z-keyword,
+.z-type,
+.z-storage {
+    color: $dark-green;
     font-weight: bold;
 }
 
-.z-string, .z-string  {
-    color:#444A42;
+.z-string,
+.z-string {
+    color: #444A42;
 }
 
-.z-entity.z-name.z-class, .z-entity.z-name.z-struct {
+.z-entity.z-name.z-class,
+.z-entity.z-name.z-struct {
     font-weight: bold;
     color: $dark-purple;
 }
 
 .z-entity.z-name.z-function {
-    color:#5E3F4C;
+    color: #5E3F4C;
     font-weight: bold;
 }
 
 .z-support.z-function {
-    color:#5E3F4C;
+    color: #5E3F4C;
 }
 
 .z-keyword.z-operator {
@@ -158,7 +172,8 @@ pre,pre>code {
 //     font-weight: bold;
 // }
 
-.z-constant.z-numeric, .z-numeric {
+.z-constant.z-numeric,
+.z-numeric {
     color: #5E3F4C;
 }
 
