@@ -42,7 +42,7 @@ img {
 }
 
 body {
-    background-color: $body-color;
+    background-color: $bg-color;
 
     // Full width for screens under 800px wide, and limit to 800px width for
     // larger screens
@@ -76,11 +76,11 @@ section>h3 {
 }
 
 hr {
-    background-color: #E8D7AE;
-    border-color: #E8D7AE;
+    background-color: $code-color;
+    border-color: $code-color;
     //height: 1rem;
     border: 0;
-    border-top: 3px #E8D7AE solid;
+    border-top: 1px $code-color solid;
 }
 
 mark {
@@ -120,14 +120,15 @@ section.sectiondiv>p {
 
 code {
     font-weight: bold;
-    background-color: $code-color;
+    background-color: $body-color;
     border-radius: 1rem;
+    padding: 0 .5rem;
     //padding: 0.1rem 0.5rem;
 }
 
 pre,
 pre>code {
-    background-color: $code-color;
+    background-color: $body-color;
     color: $dark-blue;
     font-size: 1rem;
     line-height: 1.3rem;

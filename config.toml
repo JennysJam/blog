@@ -8,7 +8,7 @@ compile_sass = true
 build_search_index = true
 
 # Generate RSS and Atom feed
-generate_feed = false
+generate_feed = true
 
 feed_filename = "atom.xml"
 
