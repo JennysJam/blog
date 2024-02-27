@@ -1,6 +1,7 @@
 +++
 title="Book Reviews (and more)"
 description = "Book and other media reviews"
+sort_by="date"
 +++
 
 # Book reviews
