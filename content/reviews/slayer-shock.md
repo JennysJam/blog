@@ -1,0 +1,33 @@
++++
+title = "Slayer Shock"
+description = "Game Review of Slayer Shock"
+date = 2024-04-13
++++
+
+# Slayer Shock
+
+3/5
+
+[game website](https://slayershock.com/)
+
+[itch.io purchase link](https://minorkeygames.itch.io/slayer-shock)
+
+Slayer Shock is what the video game equivalent of competent fanfiction is for Buffy the Vampire Slayer, which it carefully avoids mentioning on any of it sites despite the clear influence. I'm not very familiar with Buffy or Angel aside from a kind of high level overview, but it leans on not only the general idea of the show having a teenage woman fighting vampires and other horror themed threats along with a supporting cast, but the structural elements of a TV show -- each micro-campaign is built around discovering and fighting a major threat while handling the vampire threat in multiple different neighborhoods, whose procedurally generated missions act as general biomes.
+
+I bought it for more than I think most people would say the game is worth it, but I've wanted to try it for a while: I appreciated the developers previous game [Eldritch](https://www.eldritchgame.com/) and generally heard good things about the structured campaign of thriller/stealth [Neon Struct](https://www.neonstruct.com/), although Slayer Shock had a pretty muted if not negative critical reception, and I think I get it, it's a game with a very particular vision of what it does, and it does that with a focused budget. Game dev is hard and takes more time and effort longer than anyone whose not intimately familiar with, and I have read some of the developer logs, I think they pulled off what they wanted pretty well.
+
+It also blends genre in a bit of a funky way: it is a "roguelite" first person action RPG with stealth mechanics. It's a roguelite in that you have persistence after failing, but this is tied in at a campaign level: failing a mission gives partial rewards while the threat level in neighborhoods increase, which means that you're kind of racing an external pressure. To finish a campaign, you have to gain enough currency/experience points to purchase research (which also takes a number of missions ran afterward) to eventually find the season Big Bad and defeat them before all of the neighborhoods are fully overrun. At the same time, missions give particular rewards, including new shopkeepers, currency, weapon or passive buffs. The result of all of this is a final fight against a big bad who occasionally appears in nightmares, echoing Buffy's Master arc. 
+
+So that's the macro level of play, the meso level of play is also kind of hard to suss out, but it's kind of a tactical stealth action game: the procedurally generated levels aren't really meant to be explored, instead you generally can/should prioritize moving quickly and/or stealthily to your objectives, and only supply chests that you stumble across near you are likely worth it. There's a sort of persistent stealth element, but generally being alerted only grabs nearby enemies and at times is either impossible or something should you be using strategically. Additionally, higher rank enemies drop currency, which with an upgrade is a healing source. Once I stopped trying to fully explore and instead did like, tactical stealth combat I made headway in the game.
+
+And at the micro level, the game is kind of a first person hack and slash/shooter, but with fairly simple gunplay and non-conventional weapons that fit the whole vampire hunting thing, along with light stealth.
+
+While the game tries to liven up the coffee shop hub area with random interactions (and sometimes bonuses from those interactions) from your allies/shopkeepers, it is a bit spartan and simple, but definitely within scope. In the lore of Buffy, the titular Slayers are chosen by Fate(?) and are more or less meant to sacrifice their lives and connection to community to act in that role, which Buffy buckles by trying to balance being a normal person integrated into society and a vampire hunter. This game has numerous bits of dialogue that try to match the shows theme that connection is a strength, but at the same time your unnamed Slayer only engages with her allies for strategic utility and doesn't really interact with her society at all except for this. I'm sure this isn't intentional and you should imagine that she has more normal parts of life, but it does create an odd undertone to the whole thing, because whereas your teammates have crushes/arguments/falling out and a general sense of being organic people especially when reacting to random events (like discovering that a local bar uses vampire blood in the drinks... twice) your character isn't. 
+
+I think the season/episode structure of the game is cool, and a really good fit that also creates a natural sense of rising tension and danger, and the ways chain together does seem like it could be neat. I finished one season, and I'll see how after playing a few others.
+
+I think this game couldn't have been made during Buffy's actual showing even if technically possible (a lot of retro games pull on having a GPU for extra effects and general luxury of RAM that means you can have large areas all in view), but also because this sort of experimental structure with both failure and rising tension was fairly niche, and even though you can point to Dark Soul's huge mechanical influence, dark souls is also mostly ok with you standing still while you gain resources that supplement skills and don't have an explicit possible set of failures. 
+
+I also like the aesthetic details of passive buffs being represented as bracelets on your characters arm, and that you can customize the nail polish and your characters skin color. Since you never leave first person, this gives you a fairly focused set of self expressions in your hands. Since my Slayer alternated between navy and dark red nail polish and got silver or metal bracelets, I think she qualifies as she a [Dark](https://www.mystylebox.ca/pages/dark-deep-winter-seasonal-color-guide) or [True](https://www.mystylebox.ca/pages/true-cool-winter-seasonal-color-guide) Winter.
+
+I think I'd recommend this game if this review sounds interesting, and you are OK with something interesting that won't blow you away, or you are a Buffy the Vampire Slayer fan who is willing to try something that isn't interested in being more Buffy, but is instead interested in trying to emulate some of its thematic content and its formal structure into a different genre. Also if you are an immersive sim person and are ok with something a bit more off kilter, then it is an ImSim without any 451 callouts in it.
