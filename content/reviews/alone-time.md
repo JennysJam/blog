@@ -1,6 +1,6 @@
 +++
 title = "The Alone Time"
-description = "Book review of Slayer Shock"
+description = "Book review of The Alone Time"
 date = 2024-04-13
 +++
 
