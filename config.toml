@@ -8,9 +8,9 @@ compile_sass = true
 build_search_index = true
 
 # Generate RSS and Atom feed
-generate_feed = true
+generate_feeds = true
 
-feed_filename = "atom.xml"
+feed_filenames = ["atom.xml"]
 
 [markdown]
 # Whether to do syntax highlighting
