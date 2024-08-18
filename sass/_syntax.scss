@@ -1,0 +1,12 @@
+@use "color";
+
+.z-keyword,
+.z-type,
+.z-storage,
+.z-tag {
+    font-weight: bold;
+}
+
+.z-comment {
+    font-style: italic;
+}
