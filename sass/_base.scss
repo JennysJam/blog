@@ -6,7 +6,7 @@
     html {
         background-color: color.$main-light;
         color: color.$font-color;
-        size: 16px;
+        font-size: 1rem;
     }
 
     @media (min-width: 600px) {
@@ -20,15 +20,15 @@
         color: color.$font-color;
     }
     h1 {
-        size: 1.6rem;
+        font-size: 1.6rem;
         font-weight: bold;
     }
     h2 {
-        size: 1.2rem;
+        font-size: 1.2rem;
         font-weight: bold;
     }
     h3, h4, h5, h6 {
-        size: 1rem;
+        font-size: 1rem;
         font-weight: bold;
     }
 }
