@@ -41,6 +41,8 @@ Suggested practice would be that any developer working on a new feature would ad
 
 Maybe a custom a linting tool could be added to check for this?
 
+On the other hand, rewriting code is more likely to add bugs, and those debugging log statements added while debuging code may be better to keep because the original developer is aware of them, and a rewrite may remove/get rid of implicit context the original person had?
+
 ## `SUCCESS` Level
 The Python library [Loguru](https://github.com/Delgan/loguru) has an extra `SUCCESS` level. I thought this was a good idea to indicate some sizable sub-operation suceeded, especially in a response/request or command based system.
 
