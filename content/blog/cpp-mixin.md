@@ -39,7 +39,6 @@ Bonuses:
 I think the standard C++ interface method would look like this:
 
 ```cpp
-
 class IClone
 {
 public:
@@ -79,13 +78,13 @@ class String:
 protected:
     char* data_;
 };
-
 ```
 
 But this does opt us into having a vtable (which is fine, honestly?). My idea uses the [CRTP pattern](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern):
 
-```cpp
+One other issue: child classes implementing `auto clone() -> Clone*` _must_ return a pointer or reference, and not any other class -- this is because of C++'s rule on overloading functions, which only allow covariance in function return types if they are returning pointers (see [this blog post](https://eli.thegreenplace.net/2018/covariance-and-contravariance-in-subtyping/)).
 
+```cpp
 template<typename T>
 class MClone
 {
@@ -134,7 +133,6 @@ Right now, the differences between these are fairly small, but the CRTP method g
     ```
 * You can something similar to [Rust's associated types](https://doc.rust-lang.org/rust-by-example/generics/assoc_items/types.html) by checking for a child class type:
     ```cpp
-
     template<typename T>
     class MClone
     {
@@ -185,9 +183,13 @@ Right now, the differences between these are fairly small, but the CRTP method g
     and as an example of using it:
     ```cpp
     template<typename T>
-    auto clone() -> Result<T>
+    auto clone(const T& value) -> Result<T>
     {
-
+        static_assert(
+            is_clone<T>::value == true,
+            "Type must implement Clone"
+        );
+        return value.clone();
     }
     ```
 
@@ -201,4 +203,4 @@ I don't know, probably not!
 
 A lot of this is already sort of done by the C++ standard library with [concepts](https://en.cppreference.com/w/cpp/keyword/concept), so I mostly just think it's Neat and something you could add to earlier C++ versions.
 
-It's also something I think can show off the utilities of what the CRTP can do. 
+It's also something I think can show off the utilities of what the CRTP pattern can do. 
