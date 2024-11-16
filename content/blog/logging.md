@@ -1,7 +1,7 @@
 +++
 title = "Thoughts on Logging"
 date = 2024-11-09
-description = "An overview of the C ecosystem and associated environment"
+description = "Thoughts on what application logging systems should add"
 slug="logging"
 +++
 
