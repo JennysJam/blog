@@ -80,7 +80,7 @@ protected:
 };
 ```
 
-But this does opt us into having a vtable (which is fine, honestly?). My idea uses the [CRTP pattern](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern):
+But this does opt us into having a vtable (which is fine, honestly?). My idea uses the [CRTP pattern](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern).
 
 One other issue: child classes implementing `auto clone() -> Clone*` _must_ return a pointer or reference, and not any other class -- this is because of C++'s rule on overloading functions, which only allow covariance in function return types if they are returning pointers (see [this blog post](https://eli.thegreenplace.net/2018/covariance-and-contravariance-in-subtyping/)).
 
