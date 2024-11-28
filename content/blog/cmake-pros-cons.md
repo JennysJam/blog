@@ -1,11 +1,11 @@
 +++
-title = "CMake: The Good Parts"
+title = "CMake: The Good, The Bad, The Weird"
 date = 2024-11-21
 description = "CMake: Pros, Cons and Weird Parts"
 slug="cmake-pros"
 +++
 
-# CMake
+# CMake: the Good, the Bad, the Weird
 
 CMake is one of the most popular build systems in the C/++ ecosystem according to a few recent developer surveys ([IsoCPP survey](https://isocpp.org/blog/2024/04/results-summary-2024-annual-cpp-developer-survey-lite), [CLion Survey](https://www.jetbrains.com/lp/devecosystem-2023/cpp/#cpp_projectmodels_two_years)).
 
